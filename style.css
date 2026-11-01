@@ -1,0 +1,93 @@
+/* 색은 여기서 한 번에 관리합니다. 다크 모드에서는 아래 @media 안의 값으로 바뀝니다. */
+:root {
+  --bg: #f7f7f5;
+  --text: #1f2328;
+  --muted: #656d76;
+  --bar: #4a7bd0;
+  --panel: #ffffff;
+  --border: #d0d7de;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171a;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --bar: #6f9bea;
+    --panel: #1f2328;
+    --border: #30363d;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px 16px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  word-break: keep-all;
+}
+
+header,
+main {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  color: var(--muted);
+}
+
+.controls {
+  margin-bottom: 16px;
+}
+
+button {
+  padding: 8px 16px;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--bar);
+}
+
+/* 막대 그래프 영역: 막대들을 가로로 나란히, 바닥에 붙여서 세웁니다. */
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 360px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* 막대 하나. 높이는 main.js가 값에 맞춰 정해 줍니다. */
+.bar {
+  flex: 1;
+  background: var(--bar);
+  border-radius: 3px 3px 0 0;
+}
+
+@media (max-width: 500px) {
+  .bars {
+    height: 260px;
+    gap: 1px;
+  }
+}
