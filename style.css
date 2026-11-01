@@ -4,6 +4,9 @@
   --text: #1f2328;
   --muted: #656d76;
   --bar: #4a7bd0;
+  --compare: #e0a100;  /* 비교 중 */
+  --swap: #d64545;     /* 교환 */
+  --sorted: #2f9e6a;   /* 확정 */
   --panel: #ffffff;
   --border: #d0d7de;
 }
@@ -14,6 +17,9 @@
     --text: #e6edf3;
     --muted: #8b949e;
     --bar: #6f9bea;
+    --compare: #f2c14e;
+    --swap: #f07070;
+    --sorted: #4cc38a;
     --panel: #1f2328;
     --border: #30363d;
   }
@@ -66,6 +72,23 @@ button:hover {
   border-color: var(--bar);
 }
 
+/* 주요 버튼(시작)은 색을 채워서 눈에 띄게 */
+button.primary {
+  color: #fff;
+  background: var(--bar);
+  border-color: var(--bar);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
 /* 막대 그래프 영역: 막대들을 가로로 나란히, 바닥에 붙여서 세웁니다. */
 .bars {
   display: flex;
@@ -83,6 +106,47 @@ button:hover {
   flex: 1;
   background: var(--bar);
   border-radius: 3px 3px 0 0;
+}
+
+/* 상태별 막대 색. 확정(sorted)보다 비교·교환을 뒤에 둬서, 둘 다 붙으면 비교·교환 색이 보인다. */
+.bar.sorted,
+.swatch.sorted {
+  background: var(--sorted);
+}
+
+.bar.compare,
+.swatch.compare {
+  background: var(--compare);
+}
+
+.bar.swap,
+.swatch.swap {
+  background: var(--swap);
+}
+
+/* 범례 */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--bar);
 }
 
 @media (max-width: 500px) {
