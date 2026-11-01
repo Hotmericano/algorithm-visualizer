@@ -42,6 +42,16 @@ function renderBars(values) {
 function resetArray() {
   array = createRandomArray(ARRAY_SIZE);
   renderBars(array);
+
+  // #2: 버블 정렬 단계를 기록해서 콘솔에 출력한다. (F12 → Console 탭에서 확인)
+  // 화면 재생은 #3에서 붙인다.
+  const steps = bubbleSortSteps(array);
+  const count = (type) => steps.filter((s) => s.type === type).length;
+  console.log(
+    `버블 정렬 단계 ${steps.length}개 ` +
+      `(비교 ${count('compare')}, 교환 ${count('swap')}, 확정 ${count('sorted')})`
+  );
+  console.log('처음 10단계:', steps.slice(0, 10));
 }
 
 newArrayBtn.addEventListener('click', resetArray);
