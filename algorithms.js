@@ -7,6 +7,7 @@
 //   { type: 'swap', i, j }     i번째와 j번째 값을 바꿨다
 //   { type: 'sorted', index }  index번째 자리는 이제 최종 위치로 확정됐다
 //   { type: 'pivot', index }   index번째 값을 피벗(기준값)으로 골랐다 (퀵 정렬)
+//   { type: 'range', from, to } from ~ to 구간을 합치기 시작했다 (병합 정렬)
 
 // 버블 정렬
 // 이웃한 두 값을 비교해서 큰 값을 오른쪽으로 보낸다.
@@ -165,6 +166,63 @@ function quickSortSteps(input) {
   return steps;
 }
 
+// 병합 정렬
+// 배열을 반으로, 또 반으로 나눠서 값이 하나씩 남을 때까지 쪼갠 다음(분할),
+// 정렬된 두 구간을 앞에서부터 비교하며 하나로 합친다(병합). 이걸 거꾸로 올라가며 반복한다.
+//
+// 실제 병합 정렬은 보조 배열에 값을 옮겨 담으며 합친다.
+// 여기서는 화면의 막대가 항상 실제 값과 일치하도록, 오른쪽 값이 더 작을 때
+// 그 값을 이웃 교환으로 왼쪽 자리까지 밀어 넣는 "제자리 병합"을 쓴다.
+// 그래서 비교 횟수는 실제 병합 정렬과 같지만, 교환 횟수는 더 많게 나온다.
+function mergeSortSteps(input) {
+  const arr = [...input];
+  const steps = [];
+
+  function swap(i, j) {
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    steps.push({ type: 'swap', i, j });
+  }
+
+  // lo ~ hi 구간을 정렬한다.
+  function sort(lo, hi) {
+    if (lo >= hi) return; // 값이 하나 이하면 이미 정렬돼 있다
+    const mid = Math.floor((lo + hi) / 2);
+    sort(lo, mid);       // 왼쪽 절반
+    sort(mid + 1, hi);   // 오른쪽 절반
+    merge(lo, mid, hi);  // 둘을 합친다
+  }
+
+  // 정렬된 두 구간 [lo ~ mid]와 [mid+1 ~ hi]를 하나로 합친다.
+  function merge(lo, mid, hi) {
+    steps.push({ type: 'range', from: lo, to: hi });
+
+    let i = lo;      // 왼쪽 구간에서 다음에 볼 값
+    let j = mid + 1; // 오른쪽 구간에서 다음에 볼 값
+
+    while (i <= mid && j <= hi) {
+      steps.push({ type: 'compare', i, j });
+      if (arr[i] <= arr[j]) {
+        i++; // 왼쪽 값이 작거나 같으면 이미 제자리
+      } else {
+        // 오른쪽 값이 더 작다 → i 자리까지 한 칸씩 밀어 넣는다.
+        for (let k = j; k > i; k--) swap(k - 1, k);
+        // 왼쪽 구간 전체가 한 칸씩 오른쪽으로 밀렸다.
+        i++;
+        mid++;
+        j++;
+      }
+    }
+  }
+
+  sort(0, arr.length - 1);
+
+  // 마지막 병합이 끝나야 비로소 모든 자리가 확정된다.
+  for (let k = 0; k < arr.length; k++) {
+    steps.push({ type: 'sorted', index: k });
+  }
+  return steps;
+}
+
 // 화면의 드롭다운에서 고를 수 있는 정렬 알고리즘 목록
 // 새 알고리즘을 만들면 여기에 한 줄만 추가하면 된다.
 const SORT_ALGORITHMS = {
@@ -172,6 +230,7 @@ const SORT_ALGORITHMS = {
   selection: { name: '선택 정렬', steps: selectionSortSteps },
   insertion: { name: '삽입 정렬', steps: insertionSortSteps },
   quick: { name: '퀵 정렬', steps: quickSortSteps },
+  merge: { name: '병합 정렬', steps: mergeSortSteps },
 };
 
 // node로 테스트할 때 불러올 수 있게 내보낸다. (브라우저에서는 무시된다)
@@ -181,6 +240,7 @@ if (typeof module !== 'undefined') {
     selectionSortSteps,
     insertionSortSteps,
     quickSortSteps,
+    mergeSortSteps,
     SORT_ALGORITHMS,
   };
 }

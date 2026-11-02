@@ -6,7 +6,7 @@
   <title>알고리즘 시각화</title>
   <!-- 파일 주소 끝의 ?v=버전 : 버전이 바뀌면 브라우저가 예전 캐시 대신 새 파일을 받는다.
        CSS나 JS를 고친 PR에서는 이 숫자를 함께 올려 주세요. -->
-  <link rel="stylesheet" href="style.css?v=0.3.0">
+  <link rel="stylesheet" href="style.css?v=0.3.1">
 </head>
 <body>
   <header>
@@ -56,6 +56,7 @@
       <li><span class="swatch swap"></span>교환</li>
       <li><span class="swatch sorted"></span>확정</li>
       <li><span class="swatch pivot"></span>피벗 (퀵 정렬)</li>
+      <li><span class="swatch range"></span>합치는 구간 밖은 흐리게 (병합 정렬)</li>
     </ul>
 
     <!-- 같은 배열로 끝까지 재생한 알고리즘들의 횟수 비교. 기록이 생기면 나타난다. -->
@@ -72,8 +73,8 @@
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
-  <script src="utils.js?v=0.3.0"></script>
-  <script src="algorithms.js?v=0.3.0"></script>
-  <script src="main.js?v=0.3.0"></script>
+  <script src="utils.js?v=0.3.1"></script>
+  <script src="algorithms.js?v=0.3.1"></script>
+  <script src="main.js?v=0.3.1"></script>
 </body>
 </html>

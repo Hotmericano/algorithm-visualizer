@@ -23,6 +23,7 @@ function indicesInRange(steps, n) {
   return steps.every((s) => {
     if (s.type === 'compare' || s.type === 'swap') return ok(s.i) && ok(s.j);
     if (s.type === 'sorted' || s.type === 'pivot') return ok(s.index);
+    if (s.type === 'range') return ok(s.from) && ok(s.to) && s.from <= s.to;
     return false; // 모르는 단계 종류
   });
 }
