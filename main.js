@@ -10,6 +10,7 @@ const playBtn = document.getElementById('play-btn');
 const stepBtn = document.getElementById('step-btn');
 const speedSlider = document.getElementById('speed-slider');
 const statusText = document.getElementById('status');
+const algorithmSelect = document.getElementById('algorithm-select');
 const customForm = document.getElementById('custom-form');
 const customInput = document.getElementById('custom-input');
 const customError = document.getElementById('custom-error');
@@ -134,7 +135,9 @@ function advance() {
 // 아직 단계를 기록하지 않았다면 지금 기록한다.
 function prepareSteps() {
   if (state === 'idle') {
-    steps = bubbleSortSteps(array);
+    // 드롭다운에서 고른 알고리즘으로 단계를 기록한다.
+    const algorithm = SORT_ALGORITHMS[algorithmSelect.value];
+    steps = algorithm.steps(array);
     stepIndex = 0;
   }
 }
@@ -234,6 +237,21 @@ function updateStatus() {
 newArrayBtn.addEventListener('click', resetArray);
 
 customForm.addEventListener('submit', applyCustomArray);
+
+// 드롭다운에 알고리즘 목록을 채운다.
+// SORT_ALGORITHMS에 알고리즘을 추가하면 여기는 고치지 않아도 목록에 저절로 나온다.
+for (const [key, algorithm] of Object.entries(SORT_ALGORITHMS)) {
+  const option = document.createElement('option');
+  option.value = key;
+  option.textContent = algorithm.name;
+  algorithmSelect.appendChild(option);
+}
+
+// 알고리즘을 바꾸면 같은 처음 배열로 되돌린다.
+// 그래서 배열은 그대로 두고 알고리즘만 바꿔 가며 비교할 수 있다.
+algorithmSelect.addEventListener('change', () => {
+  loadArray(initialArray);
+});
 
 // 창 크기가 바뀌면 막대 폭도 바뀌니까 숫자 표시 방식을 다시 고른다.
 window.addEventListener('resize', updateLabelMode);
