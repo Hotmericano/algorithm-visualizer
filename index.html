@@ -6,7 +6,7 @@
   <title>알고리즘 시각화</title>
   <!-- 파일 주소 끝의 ?v=버전 : 버전이 바뀌면 브라우저가 예전 캐시 대신 새 파일을 받는다.
        CSS나 JS를 고친 PR에서는 이 숫자를 함께 올려 주세요. -->
-  <link rel="stylesheet" href="style.css?v=0.5.1">
+  <link rel="stylesheet" href="style.css?v=0.5.2">
 </head>
 <body>
   <header>
@@ -128,6 +128,7 @@
         <button id="random-walls-btn">랜덤 벽</button>
         <button id="random-mud-btn">랜덤 진흙</button>
         <button id="clear-walls-btn">모두 지우기</button>
+        <button id="compare-paths-btn">모든 알고리즘 비교</button>
       </div>
 
       <p class="hint">
@@ -159,17 +160,29 @@
       </ul>
 
       <p id="path-summary" class="info-note path-summary"></p>
+
+      <!-- '모든 알고리즘 비교'를 누르면 지금 격자로 모든 알고리즘을 돌린 결과가 나타난다. -->
+      <section id="path-results" class="results" hidden>
+        <h2>같은 격자 비교</h2>
+        <p class="hint">격자를 고치면 사라져요. 가장 적은 칸만 보고 가장 싼 길을 찾은 알고리즘을 강조합니다.</p>
+        <table>
+          <thead>
+            <tr><th>알고리즘</th><th>방문한 칸</th><th>경로 길이</th><th>경로 비용</th></tr>
+          </thead>
+          <tbody id="path-results-body"></tbody>
+        </table>
+      </section>
     </section>
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
-  <script src="utils.js?v=0.5.1"></script>
-  <script src="algorithms.js?v=0.5.1"></script>
-  <script src="player.js?v=0.5.1"></script>
-  <script src="main.js?v=0.5.1"></script>
-  <script src="priorityQueue.js?v=0.5.1"></script>
-  <script src="pathfinding.js?v=0.5.1"></script>
-  <script src="grid.js?v=0.5.1"></script>
-  <script src="app.js?v=0.5.1"></script>
+  <script src="utils.js?v=0.5.2"></script>
+  <script src="algorithms.js?v=0.5.2"></script>
+  <script src="player.js?v=0.5.2"></script>
+  <script src="main.js?v=0.5.2"></script>
+  <script src="priorityQueue.js?v=0.5.2"></script>
+  <script src="pathfinding.js?v=0.5.2"></script>
+  <script src="grid.js?v=0.5.2"></script>
+  <script src="app.js?v=0.5.2"></script>
 </body>
 </html>
