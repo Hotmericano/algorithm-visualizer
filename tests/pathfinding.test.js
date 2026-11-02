@@ -151,3 +151,43 @@ for (const key of Object.keys(PATH_ALGORITHMS)) {
     check(key, name, lines, expected);
   }
 }
+
+// A*는 다익스트라와 같은 비용의 길을 찾으면서, 살펴보는 칸은 더 적어야 한다.
+{
+  const { dijkstraSearch, astarSearch } = require('../pathfinding.js');
+  const open = Array.from({ length: 15 }, (_, r) =>
+    Array.from({ length: 30 }, (_, c) => (r === 7 && c === 2 ? 'S' : r === 7 && c === 27 ? 'E' : '.')).join('')
+  );
+  const grid = parseGrid(open);
+  const d = dijkstraSearch(grid);
+  const a = astarSearch(grid);
+  const ok = a.pathCost === d.pathCost && a.visitedCount < d.visitedCount;
+  console.log(
+    `${ok ? '✅' : '❌'} A*가 다익스트라보다 적게 방문 (빈 격자 15×30: A* ${a.visitedCount}칸, 다익스트라 ${d.visitedCount}칸, 비용 ${a.pathCost})`
+  );
+  if (!ok) process.exitCode = 1;
+}
+
+// 랜덤 격자 200개: A*와 다익스트라는 항상 같은 비용, BFS는 항상 같은 이동 횟수의 최솟값
+{
+  const { bfsSearch, dijkstraSearch, astarSearch } = require('../pathfinding.js');
+  let ok = true;
+  for (let t = 0; t < 200; t++) {
+    const lines = Array.from({ length: 10 }, () =>
+      Array.from({ length: 14 }, () => {
+        const x = Math.random();
+        return x < 0.25 ? '#' : x < 0.45 ? '~' : '.';
+      })
+    );
+    lines[0][0] = 'S';
+    lines[9][13] = 'E';
+    const grid = parseGrid(lines.map((l) => l.join('')));
+    const d = dijkstraSearch(grid);
+    const a = astarSearch(grid);
+    if (d.found !== a.found || d.pathCost !== a.pathCost) ok = false;
+    if (bfsSearch(grid).found !== d.found) ok = false;
+    if (d.found && checkPath(grid, a.steps)) ok = false;
+  }
+  console.log(`${ok ? '✅' : '❌'} 랜덤 격자 200개: A*와 다익스트라의 경로 비용이 항상 같음`);
+  if (!ok) process.exitCode = 1;
+}

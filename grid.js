@@ -15,6 +15,9 @@ const randomWallsBtn = document.getElementById('random-walls-btn');
 const randomMudBtn = document.getElementById('random-mud-btn');
 const brushBtns = document.querySelectorAll('.brush');
 const pathCostEl = document.getElementById('path-cost');
+const comparePathsBtn = document.getElementById('compare-paths-btn');
+const pathResults = document.getElementById('path-results');
+const pathResultsBody = document.getElementById('path-results-body');
 const pathAlgorithmSelect = document.getElementById('path-algorithm-select');
 const visitedCountEl = document.getElementById('visited-count');
 const pathLengthEl = document.getElementById('path-length');
@@ -33,6 +36,7 @@ let cellEls = []; // cellEls[r][c] = 화면의 칸(div)
 // (pathPlayer는 아래 '탐색 재생'에서 만든다. 함수는 나중에 불리니까 괜찮다)
 function onGridEdit() {
   resetSearch();
+  pathResults.hidden = true; // 비교표도 이전 격자 기준이라 숨긴다
 }
 
 // ===== 크기 정하기 =====
@@ -349,3 +353,34 @@ pathAlgorithmSelect.addEventListener('change', () => {
   renderPathSummary();
 });
 renderPathSummary();
+
+// ===== 모든 알고리즘 비교 =====
+// 애니메이션 없이 지금 격자로 모든 알고리즘을 돌려서 결과만 표로 보여준다.
+function comparePaths() {
+  const rows = Object.values(PATH_ALGORITHMS).map((a) => ({ name: a.name, ...a.search(grid) }));
+
+  // 가장 싼 비용을 찾은 알고리즘들 중에서 방문한 칸이 가장 적은 것을 강조한다.
+  const found = rows.filter((r) => r.found);
+  const cheapest = Math.min(...found.map((r) => r.pathCost));
+  const optimal = found.filter((r) => r.pathCost === cheapest);
+  const fewest = Math.min(...optimal.map((r) => r.visitedCount));
+
+  pathResultsBody.innerHTML = '';
+  for (const r of rows) {
+    const tr = document.createElement('tr');
+    if (r.found && r.pathCost === cheapest && r.visitedCount === fewest) tr.className = 'best';
+    const cells = r.found
+      ? [r.name, r.visitedCount, `${r.pathLength}칸`, r.pathCost]
+      : [r.name, r.visitedCount, '길 없음', '-'];
+    for (const text of cells) {
+      const td = document.createElement('td');
+      td.textContent = text;
+      tr.appendChild(td);
+    }
+    pathResultsBody.appendChild(tr);
+  }
+  pathResults.hidden = false;
+  pathResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+comparePathsBtn.addEventListener('click', comparePaths);

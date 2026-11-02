@@ -121,6 +121,23 @@ function dijkstraSearch(grid) {
   return bestFirstSearch(grid, () => 0);
 }
 
+// A* (에이스타)
+// 다익스트라에 "도착점까지 앞으로 얼마나 남았을까" 하는 추정값(휴리스틱)을 더해서,
+// 도착점 쪽으로 가는 칸을 먼저 살펴본다. 그래서 다익스트라보다 훨씬 적은 칸만 보고도 같은 비용의 길을 찾는다.
+//
+// 휴리스틱은 맨해튼 거리(|행 차이| + |열 차이|)를 쓴다.
+// 상하좌우로만 움직이고 칸 비용이 최소 1이니까, 실제 남은 비용보다 절대 크지 않다.
+// 이렇게 "실제보다 크게 추정하지 않는" 휴리스틱이면 A*도 최소 비용 경로를 보장한다.
+function astarSearch(grid) {
+  const { end } = grid;
+  return bestFirstSearch(grid, (r, c) => {
+    const distance = Math.abs(r - end.r) + Math.abs(c - end.c);
+    // 우선순위가 같은 칸이 아주 많을 때는 도착점에 더 가까운 칸을 먼저 보도록 아주 조금(0.0001배) 더한다.
+    // 경로 비용은 정수이고 이 격자에서 10000을 넘지 않아서, 찾는 경로의 비용은 바뀌지 않는다.
+    return distance * 1.0001;
+  });
+}
+
 // 다익스트라와 A*는 꺼내는 순서(우선순위)만 다르고 나머지는 똑같다.
 //   우선순위 = 지금까지 비용(g) + 앞으로 남은 비용 추정값(h)
 //   다익스트라는 h = 0, A*는 h = 도착점까지의 맨해튼 거리
@@ -185,11 +202,18 @@ const PATH_ALGORITHMS = {
     summary:
       '지금까지 드는 비용이 가장 적은 칸부터 꺼내며 퍼져 나갑니다. 우선순위 큐(최소 힙)를 써요. 진흙처럼 비용이 큰 칸이 있으면 돌아가는 게 더 싼지 따져서 비용이 가장 적은 경로를 찾습니다.',
   },
+  astar: {
+    name: 'A*',
+    search: astarSearch,
+    weighted: true,
+    summary:
+      '다익스트라의 "지금까지 비용"에 "도착점까지 남은 거리 추정값(맨해튼 거리)"을 더한 값이 가장 작은 칸부터 봅니다. 도착점 쪽으로 곧장 뻗어 나가서, 다익스트라와 같은 비용의 길을 훨씬 적은 칸만 보고 찾아요.',
+  },
 };
 
 // node로 테스트할 때 불러올 수 있게 내보낸다. (브라우저에서는 무시된다)
 if (typeof module !== 'undefined') {
   // node에서는 우선순위 큐를 직접 불러온다. (브라우저에서는 priorityQueue.js가 먼저 로드된다)
   global.MinHeap = require('./priorityQueue.js').MinHeap;
-  module.exports = { bfsSearch, dijkstraSearch, neighborsOf, PATH_ALGORITHMS };
+  module.exports = { bfsSearch, dijkstraSearch, astarSearch, neighborsOf, PATH_ALGORITHMS };
 }
