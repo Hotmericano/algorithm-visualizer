@@ -27,6 +27,15 @@
       <span id="status" class="status" aria-live="polite"></span>
     </div>
 
+    <!-- 배열 직접 입력. form으로 감싸면 입력칸에서 Enter를 눌러도 적용된다. -->
+    <form id="custom-form" class="custom">
+      <label for="custom-input">배열 직접 입력</label>
+      <input id="custom-input" type="text" inputmode="numeric" autocomplete="off"
+             placeholder="예: 5, 3, 8, 1, 9, 2">
+      <button type="submit">적용</button>
+      <p id="custom-error" class="error" role="alert"></p>
+    </form>
+
     <!-- 막대들이 들어갈 자리. main.js가 여기에 막대를 채워 넣습니다. -->
     <div id="bars" class="bars" aria-label="배열 막대 그래프"></div>
 
@@ -40,6 +49,7 @@
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
+  <script src="utils.js"></script>
   <script src="algorithms.js"></script>
   <script src="main.js"></script>
 </body>

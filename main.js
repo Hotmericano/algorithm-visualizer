@@ -10,6 +10,9 @@ const playBtn = document.getElementById('play-btn');
 const stepBtn = document.getElementById('step-btn');
 const speedSlider = document.getElementById('speed-slider');
 const statusText = document.getElementById('status');
+const customForm = document.getElementById('custom-form');
+const customInput = document.getElementById('custom-input');
+const customError = document.getElementById('custom-error');
 
 // ===== 상태 =====
 // 재생 상태는 네 가지 중 하나다.
@@ -18,7 +21,9 @@ const statusText = document.getElementById('status');
 //   'paused'  중간에 멈춘 상태. 계속하거나 한 단계씩 넘길 수 있다.
 //   'done'    정렬이 끝났다.
 let state = 'idle';
-let array = [];      // 지금 화면에 그려진 배열 (재생하면서 실제로 바뀐다)
+let array = [];        // 지금 화면에 그려진 배열 (재생하면서 실제로 바뀐다)
+let initialArray = []; // 정렬하기 전 처음 배열. '다시 재생'할 때 이걸로 되돌린다.
+let maxValue = 1;      // 가장 큰 값. 이 값이 막대 높이 100%가 된다.
 let steps = [];      // 정렬 알고리즘이 기록한 단계 목록
 let stepIndex = 0;   // 다음에 재생할 단계 번호
 let timerId = null;  // 재생 타이머
@@ -37,22 +42,42 @@ function createRandomArray(size) {
   return result;
 }
 
-// 막대 하나의 높이를 값에 맞춘다.
+// 막대 하나의 높이와 숫자를 값에 맞춘다.
+// 배열에서 가장 큰 값(maxValue)이 100%, 그 절반이면 50%가 된다.
 function setBarHeight(bar, value) {
-  bar.style.height = `${(value / MAX_VALUE) * 100}%`;
+  bar.style.height = `${(value / maxValue) * 100}%`;
   bar.title = value; // 마우스를 올리면 값이 보인다
+  bar.firstChild.textContent = value; // 막대 위 숫자
 }
 
 // 배열 값을 막대로 그린다.
 function renderBars(values) {
   barsContainer.innerHTML = ''; // 이전 막대 지우기
+  maxValue = Math.max(1, ...values); // 모두 0이어도 0으로 나누지 않도록 최소 1
 
   for (const value of values) {
     const bar = document.createElement('div');
     bar.className = 'bar';
+
+    const label = document.createElement('span'); // 막대 위에 뜨는 숫자
+    label.className = 'bar-label';
+    bar.appendChild(label);
+
     setBarHeight(bar, value);
     barsContainer.appendChild(bar);
   }
+
+  updateLabelMode();
+}
+
+// 막대 폭에 맞춰 숫자 표시 방식을 고른다.
+//   넓으면 가로로, 좁으면 세로로, 너무 좁으면 숨긴다.
+function updateLabelMode() {
+  const count = barsContainer.children.length;
+  if (count === 0) return;
+  const barWidth = barsContainer.clientWidth / count;
+  barsContainer.classList.toggle('compact', barWidth < 24);
+  barsContainer.classList.toggle('tiny', barWidth < 9);
 }
 
 // ===== 속도 =====
@@ -153,15 +178,37 @@ function finish() {
   setState('done');
 }
 
-// '새 배열': 재생 중이었다면 멈추고, 새 배열로 처음 상태를 만든다.
-function resetArray() {
+// 주어진 배열로 처음 상태를 만든다. 재생 중이었다면 멈춘다.
+// 랜덤 배열, 직접 입력한 배열, 다시 재생 모두 이 함수 하나를 거친다.
+function loadArray(values) {
   clearTimeout(timerId);
   timerId = null;
-  array = createRandomArray(ARRAY_SIZE);
+  array = [...values];        // 재생하면서 바뀔 배열
+  initialArray = [...values]; // 처음 상태는 따로 보관
   steps = [];
   stepIndex = 0;
   renderBars(array);
   setState('idle');
+}
+
+// '새 배열': 랜덤 배열로 시작한다.
+function resetArray() {
+  loadArray(createRandomArray(ARRAY_SIZE));
+  customError.textContent = '';
+}
+
+// '적용': 입력한 배열로 시작한다.
+function applyCustomArray(event) {
+  event.preventDefault(); // form 기본 동작(페이지 새로고침) 막기
+
+  const result = parseArrayInput(customInput.value);
+  if (result.error) {
+    customError.textContent = result.error;
+    customInput.focus();
+    return;
+  }
+  customError.textContent = '';
+  loadArray(result.values);
 }
 
 // ===== 버튼 모양 맞추기 =====
@@ -170,9 +217,8 @@ function resetArray() {
 function setState(next) {
   state = next;
 
-  const labels = { idle: '시작', playing: '일시정지', paused: '계속', done: '완료' };
+  const labels = { idle: '시작', playing: '일시정지', paused: '계속', done: '다시 재생' };
   playBtn.textContent = labels[state];
-  playBtn.disabled = state === 'done';
   stepBtn.disabled = state === 'playing' || state === 'done';
 
   updateStatus();
@@ -187,10 +233,21 @@ function updateStatus() {
 // ===== 이벤트 연결 =====
 newArrayBtn.addEventListener('click', resetArray);
 
-// 재생 버튼 하나가 상태에 따라 시작 / 일시정지 / 계속을 맡는다.
+customForm.addEventListener('submit', applyCustomArray);
+
+// 창 크기가 바뀌면 막대 폭도 바뀌니까 숫자 표시 방식을 다시 고른다.
+window.addEventListener('resize', updateLabelMode);
+
+// 재생 버튼 하나가 상태에 따라 시작 / 일시정지 / 계속 / 다시 재생을 맡는다.
 playBtn.addEventListener('click', () => {
-  if (state === 'playing') pause();
-  else play();
+  if (state === 'playing') {
+    pause();
+  } else if (state === 'done') {
+    loadArray(initialArray); // 처음 배열로 되돌리고
+    play();                  // 다시 재생
+  } else {
+    play();
+  }
 });
 
 stepBtn.addEventListener('click', () => {
