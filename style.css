@@ -278,3 +278,69 @@ button:disabled {
     min-width: 0;
   }
 }
+
+/* 비교·교환 횟수 */
+.counters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.counters b {
+  color: var(--text);
+}
+
+/* 같은 배열 비교표 */
+.results {
+  margin-top: 24px;
+}
+
+.results h2 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.hint {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+th,
+td {
+  padding: 8px 12px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* 비교 횟수가 가장 적은 알고리즘 */
+tr.best td {
+  color: var(--sorted);
+  font-weight: 700;
+}
