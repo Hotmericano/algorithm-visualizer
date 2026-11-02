@@ -6,6 +6,7 @@
 //   { type: 'compare', i, j }  i번째와 j번째 값을 비교했다
 //   { type: 'swap', i, j }     i번째와 j번째 값을 바꿨다
 //   { type: 'sorted', index }  index번째 자리는 이제 최종 위치로 확정됐다
+//   { type: 'pivot', index }   index번째 값을 피벗(기준값)으로 골랐다 (퀵 정렬)
 
 // 버블 정렬
 // 이웃한 두 값을 비교해서 큰 값을 오른쪽으로 보낸다.
@@ -114,12 +115,63 @@ function insertionSortSteps(input) {
   return steps;
 }
 
+// 퀵 정렬
+// 기준값(피벗) 하나를 골라서, 피벗보다 작은 값은 왼쪽, 큰 값은 오른쪽으로 나눈다(분할).
+// 그러면 피벗은 최종 위치에 놓이고, 왼쪽과 오른쪽 구간을 각각 같은 방법으로 다시 정렬한다(재귀).
+// 여기서는 구간의 맨 오른쪽 값을 피벗으로 쓰는 로무토(Lomuto) 분할을 쓴다.
+function quickSortSteps(input) {
+  const arr = [...input];
+  const steps = [];
+
+  function swap(i, j) {
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    steps.push({ type: 'swap', i, j });
+  }
+
+  // lo ~ hi 구간을 정렬한다.
+  function sort(lo, hi) {
+    if (lo > hi) return; // 빈 구간
+    if (lo === hi) {
+      steps.push({ type: 'sorted', index: lo }); // 값이 하나면 이미 제자리
+      return;
+    }
+
+    const pivotIndex = partition(lo, hi);
+    sort(lo, pivotIndex - 1);  // 피벗 왼쪽 (피벗보다 작은 값들)
+    sort(pivotIndex + 1, hi);  // 피벗 오른쪽 (피벗보다 크거나 같은 값들)
+  }
+
+  // 맨 오른쪽 값을 피벗으로 삼아 나누고, 피벗이 놓인 최종 위치를 돌려준다.
+  function partition(lo, hi) {
+    steps.push({ type: 'pivot', index: hi });
+
+    // store: "피벗보다 작은 값"을 다음에 놓을 자리
+    let store = lo;
+    for (let j = lo; j < hi; j++) {
+      steps.push({ type: 'compare', i: j, j: hi });
+      if (arr[j] < arr[hi]) {
+        if (store !== j) swap(store, j);
+        store++;
+      }
+    }
+
+    // 피벗을 작은 값들 바로 뒤로 옮기면, 그 자리가 피벗의 최종 위치다.
+    if (store !== hi) swap(store, hi);
+    steps.push({ type: 'sorted', index: store });
+    return store;
+  }
+
+  sort(0, arr.length - 1);
+  return steps;
+}
+
 // 화면의 드롭다운에서 고를 수 있는 정렬 알고리즘 목록
 // 새 알고리즘을 만들면 여기에 한 줄만 추가하면 된다.
 const SORT_ALGORITHMS = {
   bubble: { name: '버블 정렬', steps: bubbleSortSteps },
   selection: { name: '선택 정렬', steps: selectionSortSteps },
   insertion: { name: '삽입 정렬', steps: insertionSortSteps },
+  quick: { name: '퀵 정렬', steps: quickSortSteps },
 };
 
 // node로 테스트할 때 불러올 수 있게 내보낸다. (브라우저에서는 무시된다)
@@ -128,6 +180,7 @@ if (typeof module !== 'undefined') {
     bubbleSortSteps,
     selectionSortSteps,
     insertionSortSteps,
+    quickSortSteps,
     SORT_ALGORITHMS,
   };
 }
