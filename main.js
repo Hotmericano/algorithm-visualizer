@@ -2,18 +2,26 @@
 const ARRAY_SIZE = 30;  // 막대 개수
 const MIN_VALUE = 5;    // 가장 작은 값
 const MAX_VALUE = 100;  // 가장 큰 값
-const STEP_DELAY = 30;  // 한 단계를 보여주는 시간 (밀리초). #4에서 슬라이더로 바꿀 수 있게 한다.
 
 // ===== 화면 요소 가져오기 =====
 const barsContainer = document.getElementById('bars');
 const newArrayBtn = document.getElementById('new-array-btn');
-const startBtn = document.getElementById('start-btn');
+const playBtn = document.getElementById('play-btn');
+const stepBtn = document.getElementById('step-btn');
+const speedSlider = document.getElementById('speed-slider');
+const statusText = document.getElementById('status');
 
 // ===== 상태 =====
+// 재생 상태는 네 가지 중 하나다.
+//   'idle'    새 배열을 만든 직후. 아직 단계를 기록하지 않았다.
+//   'playing' 자동으로 재생 중
+//   'paused'  중간에 멈춘 상태. 계속하거나 한 단계씩 넘길 수 있다.
+//   'done'    정렬이 끝났다.
+let state = 'idle';
 let array = [];      // 지금 화면에 그려진 배열 (재생하면서 실제로 바뀐다)
 let steps = [];      // 정렬 알고리즘이 기록한 단계 목록
 let stepIndex = 0;   // 다음에 재생할 단계 번호
-let timerId = null;  // 재생 타이머. null이면 재생 중이 아니다.
+let timerId = null;  // 재생 타이머
 
 // min 이상 max 이하의 정수를 무작위로 하나 만든다.
 function randomInt(min, max) {
@@ -30,7 +38,6 @@ function createRandomArray(size) {
 }
 
 // 막대 하나의 높이를 값에 맞춘다.
-// 값이 MAX_VALUE면 영역 높이의 100%, 절반이면 50%가 된다.
 function setBarHeight(bar, value) {
   bar.style.height = `${(value / MAX_VALUE) * 100}%`;
   bar.title = value; // 마우스를 올리면 값이 보인다
@@ -48,7 +55,16 @@ function renderBars(values) {
   }
 }
 
-// ===== 재생 =====
+// ===== 속도 =====
+// 슬라이더 값(1~100)을 한 단계 보여주는 시간(밀리초)으로 바꾼다.
+// 1이면 약 500ms(아주 느리게), 100이면 약 2ms(아주 빠르게).
+// 제곱을 써서 슬라이더 오른쪽 절반에서 속도가 더 촘촘하게 바뀌도록 했다.
+function getDelay() {
+  const t = (100 - Number(speedSlider.value)) / 99; // 0(빠름) ~ 1(느림)
+  return Math.round(2 + 498 * t * t);
+}
+
+// ===== 단계 반영 =====
 
 // 비교·교환 색을 지운다. (확정된 'sorted' 색은 남긴다)
 function clearHighlights() {
@@ -77,59 +93,118 @@ function applyStep(step) {
   }
 }
 
-// 다음 단계를 보여주고, STEP_DELAY 뒤에 자기 자신을 다시 부른다.
-// setInterval 대신 setTimeout을 이어 붙이는 방식이라 #4에서 일시정지·속도 조절을 붙이기 쉽다.
-function playNextStep() {
+// 다음 단계 하나를 반영한다. 더 이상 단계가 없으면 끝낸다.
+function advance() {
   if (stepIndex >= steps.length) {
-    finishPlayback();
+    finish();
     return;
   }
   applyStep(steps[stepIndex]);
   stepIndex++;
-  timerId = setTimeout(playNextStep, STEP_DELAY);
+  if (stepIndex >= steps.length) finish(); // 마지막 단계였다면 바로 완료 처리
 }
 
-// 재생이 끝났을 때
-function finishPlayback() {
+// ===== 재생 흐름 =====
+
+// 아직 단계를 기록하지 않았다면 지금 기록한다.
+function prepareSteps() {
+  if (state === 'idle') {
+    steps = bubbleSortSteps(array);
+    stepIndex = 0;
+  }
+}
+
+// 자동 재생: 한 단계 보여주고, 현재 속도만큼 기다렸다 다시 부른다.
+// 매번 getDelay()를 새로 읽기 때문에 재생 중에 슬라이더를 움직여도 바로 반영된다.
+function tick() {
+  advance();
+  if (state === 'playing') {
+    timerId = setTimeout(tick, getDelay());
+  }
+}
+
+function play() {
+  prepareSteps();
+  setState('playing');
+  tick();
+}
+
+function pause() {
+  clearTimeout(timerId);
+  timerId = null;
+  setState('paused');
+}
+
+// 한 단계 앞으로: 멈춘 상태에서만 쓸 수 있다.
+function stepOnce() {
+  prepareSteps();
+  setState('paused');
+  advance();
+}
+
+// 정렬이 끝났을 때
+function finish() {
+  clearTimeout(timerId);
   timerId = null;
   clearHighlights();
   for (const bar of barsContainer.children) {
     bar.classList.add('sorted'); // 정렬 완료: 전체 막대를 완료 색으로
   }
-  // 이미 정렬된 배열을 또 정렬할 필요는 없으니 '새 배열'을 누를 때까지 시작 버튼을 끈다.
-  startBtn.disabled = true;
+  setState('done');
 }
 
-// 재생 중이면 멈춘다.
-function stopPlayback() {
-  if (timerId !== null) {
-    clearTimeout(timerId);
-    timerId = null;
-  }
-}
-
-// '시작' 버튼: 지금 배열로 단계를 기록하고 처음부터 재생한다.
-function startSorting() {
-  if (timerId !== null) return; // 이미 재생 중이면 무시
-
-  steps = bubbleSortSteps(array);
-  stepIndex = 0;
-  startBtn.disabled = true;
-  playNextStep();
-}
-
-// '새 배열' 버튼: 재생 중이었다면 멈추고, 새 배열로 처음 상태를 만든다.
+// '새 배열': 재생 중이었다면 멈추고, 새 배열로 처음 상태를 만든다.
 function resetArray() {
-  stopPlayback();
+  clearTimeout(timerId);
+  timerId = null;
   array = createRandomArray(ARRAY_SIZE);
   steps = [];
   stepIndex = 0;
   renderBars(array);
-  startBtn.disabled = false;
+  setState('idle');
 }
 
+// ===== 버튼 모양 맞추기 =====
+// 상태가 바뀔 때마다 이 함수 하나에서 버튼 글자와 활성 여부를 정한다.
+// 여기저기서 버튼을 따로 만지면 상태와 화면이 어긋나기 쉽다.
+function setState(next) {
+  state = next;
+
+  const labels = { idle: '시작', playing: '일시정지', paused: '계속', done: '완료' };
+  playBtn.textContent = labels[state];
+  playBtn.disabled = state === 'done';
+  stepBtn.disabled = state === 'playing' || state === 'done';
+
+  updateStatus();
+}
+
+// 진행 상황 글자: "단계 120 / 730"
+function updateStatus() {
+  statusText.textContent =
+    steps.length === 0 ? '' : `단계 ${stepIndex} / ${steps.length}`;
+}
+
+// ===== 이벤트 연결 =====
 newArrayBtn.addEventListener('click', resetArray);
-startBtn.addEventListener('click', startSorting);
+
+// 재생 버튼 하나가 상태에 따라 시작 / 일시정지 / 계속을 맡는다.
+playBtn.addEventListener('click', () => {
+  if (state === 'playing') pause();
+  else play();
+});
+
+stepBtn.addEventListener('click', () => {
+  stepOnce();
+  updateStatus();
+});
+
+// 자동 재생 중에도 진행 상황 글자를 갱신한다.
+// (매 단계마다 갱신하면 빠른 속도에서 낭비라서, 화면이 다시 그려질 때만 한다)
+function statusLoop() {
+  if (state === 'playing') updateStatus();
+  requestAnimationFrame(statusLoop);
+}
+requestAnimationFrame(statusLoop);
 
 // 페이지가 열리면 바로 한 번 그린다.
 resetArray();

@@ -86,7 +86,33 @@ button:disabled {
 
 .controls {
   display: flex;
+  flex-wrap: wrap;       /* 좁은 화면에서는 줄을 바꿔서 배치 */
+  align-items: center;
+  gap: 8px 12px;
+}
+
+/* 재생 버튼 글자가 '시작' ↔ '일시정지'로 바뀌어도 너비가 흔들리지 않게 */
+#play-btn {
+  min-width: 96px;
+}
+
+.speed {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  color: var(--muted);
+}
+
+.speed input {
+  width: 140px;
+  accent-color: var(--bar);
+}
+
+/* 진행 상황 글자. 숫자 폭을 고정해서 값이 바뀌어도 글자가 흔들리지 않게 */
+.status {
+  margin-left: auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* 막대 그래프 영역: 막대들을 가로로 나란히, 바닥에 붙여서 세웁니다. */
