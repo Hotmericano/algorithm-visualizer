@@ -72,6 +72,17 @@ button:hover {
   border-color: var(--bar);
 }
 
+/* 알고리즘 드롭다운: 버튼과 같은 모양 */
+select {
+  padding: 8px 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 /* 주요 버튼(시작)은 색을 채워서 눈에 띄게 */
 button.primary {
   color: #fff;
