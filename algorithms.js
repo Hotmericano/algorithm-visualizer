@@ -224,13 +224,85 @@ function mergeSortSteps(input) {
 }
 
 // 화면의 드롭다운에서 고를 수 있는 정렬 알고리즘 목록
-// 새 알고리즘을 만들면 여기에 한 줄만 추가하면 된다.
+// 새 알고리즘을 만들면 여기에 하나만 추가하면 드롭다운, 설명 패널, 테스트에 저절로 들어간다.
+//
+//   name     드롭다운에 보이는 이름
+//   steps    단계 목록을 만드는 함수
+//   summary  동작 원리 설명 (한 줄씩)
+//   best / average / worst  시간 복잡도 (최선 / 평균 / 최악)
+//   space    추가로 필요한 메모리
+//   stable   안정 정렬인가 (같은 값끼리 원래 순서가 유지되는가)
+//   note     이 사이트에서 보여주는 방식에 대한 메모 (없으면 생략)
 const SORT_ALGORITHMS = {
-  bubble: { name: '버블 정렬', steps: bubbleSortSteps },
-  selection: { name: '선택 정렬', steps: selectionSortSteps },
-  insertion: { name: '삽입 정렬', steps: insertionSortSteps },
-  quick: { name: '퀵 정렬', steps: quickSortSteps },
-  merge: { name: '병합 정렬', steps: mergeSortSteps },
+  bubble: {
+    name: '버블 정렬',
+    steps: bubbleSortSteps,
+    summary: [
+      '이웃한 두 값을 비교해서 큰 값을 오른쪽으로 보냅니다.',
+      '한 바퀴마다 가장 큰 값이 맨 끝에 확정돼요. 한 바퀴 동안 교환이 없으면 일찍 끝냅니다.',
+    ],
+    best: 'O(n)',
+    average: 'O(n²)',
+    worst: 'O(n²)',
+    space: 'O(1)',
+    stable: true,
+  },
+  selection: {
+    name: '선택 정렬',
+    steps: selectionSortSteps,
+    summary: [
+      '남은 구간에서 가장 작은 값을 찾아 맨 앞 자리와 바꿉니다.',
+      '한 바퀴마다 맨 앞 자리가 하나씩 확정되고, 교환은 한 바퀴에 최대 1번이에요.',
+    ],
+    best: 'O(n²)',
+    average: 'O(n²)',
+    worst: 'O(n²)',
+    space: 'O(1)',
+    stable: false,
+  },
+  insertion: {
+    name: '삽입 정렬',
+    steps: insertionSortSteps,
+    summary: [
+      '왼쪽 구간을 정렬된 상태로 두고, 새 값을 하나씩 꺼내 알맞은 자리까지 왼쪽으로 옮깁니다.',
+      '카드 패를 정리하는 방식이에요. 거의 정렬된 배열에서는 아주 빠릅니다.',
+    ],
+    best: 'O(n)',
+    average: 'O(n²)',
+    worst: 'O(n²)',
+    space: 'O(1)',
+    stable: true,
+  },
+  quick: {
+    name: '퀵 정렬',
+    steps: quickSortSteps,
+    summary: [
+      '피벗(기준값)을 하나 골라 작은 값은 왼쪽, 큰 값은 오른쪽으로 나눕니다. 그러면 피벗 자리가 확정돼요.',
+      '왼쪽과 오른쪽 구간을 같은 방법으로 다시 정렬합니다(재귀). 실제로 가장 많이 쓰이는 정렬 중 하나예요.',
+    ],
+    best: 'O(n log n)',
+    average: 'O(n log n)',
+    worst: 'O(n²)',
+    space: 'O(log n)',
+    stable: false,
+    note:
+      '맨 오른쪽 값을 피벗으로 쓰기 때문에, 이미 정렬된 배열을 넣으면 매번 한쪽으로만 나뉘어 최악(O(n²))이 됩니다. 직접 입력으로 확인해 보세요.',
+  },
+  merge: {
+    name: '병합 정렬',
+    steps: mergeSortSteps,
+    summary: [
+      '배열을 반으로, 또 반으로 쪼개서 값이 하나씩 남을 때까지 나눕니다.',
+      '정렬된 두 구간을 앞에서부터 비교하며 하나로 합치는 걸 거꾸로 올라가며 반복해요. 입력과 상관없이 항상 O(n log n)입니다.',
+    ],
+    best: 'O(n log n)',
+    average: 'O(n log n)',
+    worst: 'O(n log n)',
+    space: 'O(n)',
+    stable: true,
+    note:
+      '실제 병합 정렬은 보조 배열에 옮겨 담으며 합칩니다. 이 사이트는 막대가 실제 값과 항상 맞도록 이웃 교환으로 밀어 넣는 방식이라, 비교 횟수는 같지만 교환 횟수는 더 많게 나와요.',
+  },
 };
 
 // node로 테스트할 때 불러올 수 있게 내보낸다. (브라우저에서는 무시된다)
