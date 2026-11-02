@@ -11,6 +11,10 @@ const stepBtn = document.getElementById('step-btn');
 const speedSlider = document.getElementById('speed-slider');
 const statusText = document.getElementById('status');
 const algorithmSelect = document.getElementById('algorithm-select');
+const compareCount = document.getElementById('compare-count');
+const swapCount = document.getElementById('swap-count');
+const resultsSection = document.getElementById('results');
+const resultsBody = document.getElementById('results-body');
 const customForm = document.getElementById('custom-form');
 const customInput = document.getElementById('custom-input');
 const customError = document.getElementById('custom-error');
@@ -28,6 +32,8 @@ let maxValue = 1;      // 가장 큰 값. 이 값이 막대 높이 100%가 된�
 let steps = [];      // 정렬 알고리즘이 기록한 단계 목록
 let stepIndex = 0;   // 다음에 재생할 단계 번호
 let timerId = null;  // 재생 타이머
+let counts = { compare: 0, swap: 0 }; // 지금까지 재생한 비교·교환 횟수
+let results = [];    // 같은 배열로 끝까지 재생한 알고리즘들의 기록 (비교표)
 
 // min 이상 max 이하의 정수를 무작위로 하나 만든다.
 function randomInt(min, max) {
@@ -105,9 +111,11 @@ function applyStep(step) {
   clearHighlights();
 
   if (step.type === 'compare') {
+    counts.compare++;
     bars[step.i].classList.add('compare');
     bars[step.j].classList.add('compare');
   } else if (step.type === 'swap') {
+    counts.swap++;
     // 데이터(array)를 먼저 바꾸고, 그 값에 맞춰 두 막대 높이를 다시 그린다.
     [array[step.i], array[step.j]] = [array[step.j], array[step.i]];
     setBarHeight(bars[step.i], array[step.i]);
@@ -179,17 +187,61 @@ function finish() {
     bar.classList.add('sorted'); // 정렬 완료: 전체 막대를 완료 색으로
   }
   setState('done');
+  recordResult();
+}
+
+// ===== 같은 배열 비교표 =====
+
+// 끝까지 재생한 결과를 비교표에 기록한다.
+// 같은 알고리즘을 다시 재생했다면 줄을 새로 만들지 않고 덮어쓴다.
+function recordResult() {
+  const key = algorithmSelect.value;
+  const row = {
+    key,
+    name: SORT_ALGORITHMS[key].name,
+    compare: counts.compare,
+    swap: counts.swap,
+    total: steps.length,
+  };
+  const existing = results.findIndex((r) => r.key === key);
+  if (existing >= 0) results[existing] = row;
+  else results.push(row);
+  renderResults();
+}
+
+// 비교표를 다시 그린다. 비교 횟수가 가장 적은 줄을 강조한다.
+function renderResults() {
+  resultsSection.hidden = results.length === 0;
+  resultsBody.innerHTML = '';
+  const fewest = Math.min(...results.map((r) => r.compare));
+
+  for (const r of results) {
+    const tr = document.createElement('tr');
+    if (results.length > 1 && r.compare === fewest) tr.className = 'best';
+    for (const text of [r.name, r.compare, r.swap, r.total]) {
+      const td = document.createElement('td');
+      td.textContent = text;
+      tr.appendChild(td);
+    }
+    resultsBody.appendChild(tr);
+  }
 }
 
 // 주어진 배열로 처음 상태를 만든다. 재생 중이었다면 멈춘다.
 // 랜덤 배열, 직접 입력한 배열, 다시 재생 모두 이 함수 하나를 거친다.
-function loadArray(values) {
+// keepResults가 true면 비교표를 남긴다. (같은 배열로 알고리즘만 바꾸거나 다시 재생할 때)
+function loadArray(values, keepResults = false) {
   clearTimeout(timerId);
   timerId = null;
   array = [...values];        // 재생하면서 바뀔 배열
   initialArray = [...values]; // 처음 상태는 따로 보관
   steps = [];
   stepIndex = 0;
+  counts = { compare: 0, swap: 0 };
+  if (!keepResults) {
+    results = []; // 배열이 바뀌면 비교표도 새로 시작
+    renderResults();
+  }
   renderBars(array);
   setState('idle');
 }
@@ -227,10 +279,12 @@ function setState(next) {
   updateStatus();
 }
 
-// 진행 상황 글자: "단계 120 / 730"
+// 진행 상황 글자("단계 120 / 730")와 비교·교환 횟수를 화면에 맞춘다.
 function updateStatus() {
   statusText.textContent =
     steps.length === 0 ? '' : `단계 ${stepIndex} / ${steps.length}`;
+  compareCount.textContent = counts.compare;
+  swapCount.textContent = counts.swap;
 }
 
 // ===== 이벤트 연결 =====
@@ -250,7 +304,7 @@ for (const [key, algorithm] of Object.entries(SORT_ALGORITHMS)) {
 // 알고리즘을 바꾸면 같은 처음 배열로 되돌린다.
 // 그래서 배열은 그대로 두고 알고리즘만 바꿔 가며 비교할 수 있다.
 algorithmSelect.addEventListener('change', () => {
-  loadArray(initialArray);
+  loadArray(initialArray, true);
 });
 
 // 창 크기가 바뀌면 막대 폭도 바뀌니까 숫자 표시 방식을 다시 고른다.
@@ -261,7 +315,7 @@ playBtn.addEventListener('click', () => {
   if (state === 'playing') {
     pause();
   } else if (state === 'done') {
-    loadArray(initialArray); // 처음 배열로 되돌리고
+    loadArray(initialArray, true); // 처음 배열로 되돌리고
     play();                  // 다시 재생
   } else {
     play();

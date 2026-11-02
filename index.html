@@ -6,7 +6,7 @@
   <title>알고리즘 시각화</title>
   <!-- 파일 주소 끝의 ?v=버전 : 버전이 바뀌면 브라우저가 예전 캐시 대신 새 파일을 받는다.
        CSS나 JS를 고친 PR에서는 이 숫자를 함께 올려 주세요. -->
-  <link rel="stylesheet" href="style.css?v=0.2.2">
+  <link rel="stylesheet" href="style.css?v=0.2.3">
 </head>
 <body>
   <header>
@@ -40,6 +40,12 @@
       <p id="custom-error" class="error" role="alert"></p>
     </form>
 
+    <!-- 지금까지 재생한 비교·교환 횟수 -->
+    <div class="counters" aria-live="off">
+      <span>비교 <b id="compare-count">0</b></span>
+      <span>교환 <b id="swap-count">0</b></span>
+    </div>
+
     <!-- 막대들이 들어갈 자리. main.js가 여기에 막대를 채워 넣습니다. -->
     <div id="bars" class="bars" aria-label="배열 막대 그래프"></div>
 
@@ -50,11 +56,23 @@
       <li><span class="swatch swap"></span>교환</li>
       <li><span class="swatch sorted"></span>확정</li>
     </ul>
+
+    <!-- 같은 배열로 끝까지 재생한 알고리즘들의 횟수 비교. 기록이 생기면 나타난다. -->
+    <section id="results" class="results" hidden>
+      <h2>같은 배열 비교</h2>
+      <p class="hint">알고리즘을 바꾸면 같은 배열로 돌아갑니다. 끝까지 재생할 때마다 한 줄씩 쌓여요.</p>
+      <table>
+        <thead>
+          <tr><th>알고리즘</th><th>비교</th><th>교환</th><th>전체 단계</th></tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+    </section>
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
-  <script src="utils.js?v=0.2.2"></script>
-  <script src="algorithms.js?v=0.2.2"></script>
-  <script src="main.js?v=0.2.2"></script>
+  <script src="utils.js?v=0.2.3"></script>
+  <script src="algorithms.js?v=0.2.3"></script>
+  <script src="main.js?v=0.2.3"></script>
 </body>
 </html>
