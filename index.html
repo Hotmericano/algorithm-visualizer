@@ -15,7 +15,16 @@
   <main>
     <div class="controls">
       <button id="new-array-btn">새 배열</button>
-      <button id="start-btn" class="primary">시작</button>
+      <!-- 하나의 버튼이 상태에 따라 시작 / 일시정지 / 계속으로 바뀝니다. -->
+      <button id="play-btn" class="primary">시작</button>
+      <button id="step-btn" title="한 단계 앞으로">한 단계 ▶</button>
+
+      <label class="speed">
+        속도
+        <input id="speed-slider" type="range" min="1" max="100" value="70">
+      </label>
+
+      <span id="status" class="status" aria-live="polite"></span>
     </div>
 
     <!-- 막대들이 들어갈 자리. main.js가 여기에 막대를 채워 넣습니다. -->
