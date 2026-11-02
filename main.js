@@ -130,6 +130,12 @@ function applyStep(step) {
   } else if (step.type === 'sorted') {
     bars[step.index].classList.remove('pivot'); // 피벗이 제자리에 놓이면 피벗 표시는 끝
     bars[step.index].classList.add('sorted');
+  } else if (step.type === 'range') {
+    // 합치고 있는 구간만 또렷하게, 나머지는 흐리게 보여준다.
+    barsContainer.classList.add('has-range');
+    for (let k = 0; k < bars.length; k++) {
+      bars[k].classList.toggle('in-range', k >= step.from && k <= step.to);
+    }
   } else if (step.type === 'pivot') {
     // 피벗 표시는 비교·교환과 달리 다음 단계에도 남아 있어야 한다.
     for (const bar of bars) bar.classList.remove('pivot');
@@ -193,8 +199,9 @@ function finish() {
   clearTimeout(timerId);
   timerId = null;
   clearHighlights();
+  barsContainer.classList.remove('has-range');
   for (const bar of barsContainer.children) {
-    bar.classList.remove('pivot');
+    bar.classList.remove('pivot', 'in-range');
     bar.classList.add('sorted'); // 정렬 완료: 전체 막대를 완료 색으로
   }
   setState('done');
@@ -253,6 +260,7 @@ function loadArray(values, keepResults = false) {
     results = []; // 배열이 바뀌면 비교표도 새로 시작
     renderResults();
   }
+  barsContainer.classList.remove('has-range');
   renderBars(array);
   setState('idle');
 }

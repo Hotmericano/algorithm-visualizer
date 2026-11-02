@@ -245,6 +245,20 @@ button:disabled {
   background: var(--swap);
 }
 
+/* 병합 정렬: 합치는 구간 밖의 막대는 흐리게 */
+.bar {
+  transition: opacity 0.15s;
+}
+
+.bars.has-range .bar:not(.in-range) {
+  opacity: 0.25;
+}
+
+.swatch.range {
+  background: var(--bar);
+  opacity: 0.25;
+}
+
 /* 범례 */
 .legend {
   display: flex;
