@@ -20,7 +20,11 @@ function replay(input, steps) {
 // 모든 단계의 위치가 배열 범위 안에 있어야 한다.
 function indicesInRange(steps, n) {
   const ok = (k) => Number.isInteger(k) && k >= 0 && k < n;
-  return steps.every((s) => (s.type === 'sorted' ? ok(s.index) : ok(s.i) && ok(s.j)));
+  return steps.every((s) => {
+    if (s.type === 'compare' || s.type === 'swap') return ok(s.i) && ok(s.j);
+    if (s.type === 'sorted' || s.type === 'pivot') return ok(s.index);
+    return false; // 모르는 단계 종류
+  });
 }
 
 function check(algoName, stepsFn, caseName, input) {
@@ -57,6 +61,8 @@ const cases = [
   ['같은 값 있음', [3, 1, 3, 2, 1]],
   ['원소 1개', [7]],
   ['빈 배열', []],
+  ['피벗과 같은 값 많음', [5, 5, 5, 1, 5, 9, 5]],
+  ['랜덤 50개', Array.from({ length: 50 }, () => Math.floor(Math.random() * 1000))],
   ['랜덤 30개', Array.from({ length: 30 }, () => Math.floor(Math.random() * 96) + 5)],
 ];
 

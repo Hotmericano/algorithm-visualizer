@@ -7,6 +7,7 @@
   --compare: #e0a100;  /* 비교 중 */
   --swap: #d64545;     /* 교환 */
   --sorted: #2f9e6a;   /* 확정 */
+  --pivot: #8a5cf6;    /* 피벗 */
   --panel: #ffffff;
   --border: #d0d7de;
 }
@@ -20,6 +21,7 @@
     --compare: #f2c14e;
     --swap: #f07070;
     --sorted: #4cc38a;
+    --pivot: #b197fc;
     --panel: #1f2328;
     --border: #30363d;
   }
@@ -226,6 +228,11 @@ button:disabled {
 .bar.sorted,
 .swatch.sorted {
   background: var(--sorted);
+}
+
+.bar.pivot,
+.swatch.pivot {
+  background: var(--pivot);
 }
 
 .bar.compare,

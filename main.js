@@ -120,10 +120,20 @@ function applyStep(step) {
     [array[step.i], array[step.j]] = [array[step.j], array[step.i]];
     setBarHeight(bars[step.i], array[step.i]);
     setBarHeight(bars[step.j], array[step.j]);
+    // 피벗 값이 자리를 옮기면 피벗 표시도 같이 옮긴다.
+    const iPivot = bars[step.i].classList.contains('pivot');
+    const jPivot = bars[step.j].classList.contains('pivot');
+    bars[step.i].classList.toggle('pivot', jPivot);
+    bars[step.j].classList.toggle('pivot', iPivot);
     bars[step.i].classList.add('swap');
     bars[step.j].classList.add('swap');
   } else if (step.type === 'sorted') {
+    bars[step.index].classList.remove('pivot'); // 피벗이 제자리에 놓이면 피벗 표시는 끝
     bars[step.index].classList.add('sorted');
+  } else if (step.type === 'pivot') {
+    // 피벗 표시는 비교·교환과 달리 다음 단계에도 남아 있어야 한다.
+    for (const bar of bars) bar.classList.remove('pivot');
+    bars[step.index].classList.add('pivot');
   }
 }
 
@@ -184,6 +194,7 @@ function finish() {
   timerId = null;
   clearHighlights();
   for (const bar of barsContainer.children) {
+    bar.classList.remove('pivot');
     bar.classList.add('sorted'); // 정렬 완료: 전체 막대를 완료 색으로
   }
   setState('done');
