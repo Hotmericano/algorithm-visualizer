@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>알고리즘 시각화</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- 파일 주소 끝의 ?v=버전 : 버전이 바뀌면 브라우저가 예전 캐시 대신 새 파일을 받는다.
+       CSS나 JS를 고친 PR에서는 이 숫자를 함께 올려 주세요. -->
+  <link rel="stylesheet" href="style.css?v=0.2.1">
 </head>
 <body>
   <header>
@@ -27,6 +29,15 @@
       <span id="status" class="status" aria-live="polite"></span>
     </div>
 
+    <!-- 배열 직접 입력. form으로 감싸면 입력칸에서 Enter를 눌러도 적용된다. -->
+    <form id="custom-form" class="custom">
+      <label for="custom-input">배열 직접 입력</label>
+      <input id="custom-input" type="text" inputmode="numeric" autocomplete="off"
+             placeholder="예: 5, 3, 8, 1, 9, 2">
+      <button type="submit">적용</button>
+      <p id="custom-error" class="error" role="alert"></p>
+    </form>
+
     <!-- 막대들이 들어갈 자리. main.js가 여기에 막대를 채워 넣습니다. -->
     <div id="bars" class="bars" aria-label="배열 막대 그래프"></div>
 
@@ -40,7 +51,8 @@
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
-  <script src="algorithms.js"></script>
-  <script src="main.js"></script>
+  <script src="utils.js?v=0.2.1"></script>
+  <script src="algorithms.js?v=0.2.1"></script>
+  <script src="main.js?v=0.2.1"></script>
 </body>
 </html>

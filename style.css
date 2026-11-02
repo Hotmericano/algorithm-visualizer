@@ -108,6 +108,46 @@ button:disabled {
   accent-color: var(--bar);
 }
 
+/* 배열 직접 입력 */
+.custom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+}
+
+.custom label {
+  color: var(--muted);
+}
+
+.custom input {
+  flex: 1;
+  min-width: 180px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.custom input:focus {
+  outline: 2px solid var(--bar);
+  outline-offset: -1px;
+}
+
+.error {
+  width: 100%;
+  margin: 0;
+  color: var(--swap);
+  font-size: 0.9rem;
+}
+
+.error:empty {
+  display: none; /* 에러가 없으면 자리도 차지하지 않게 */
+}
+
 /* 진행 상황 글자. 숫자 폭을 고정해서 값이 바뀌어도 글자가 흔들리지 않게 */
 .status {
   margin-left: auto;
@@ -121,7 +161,7 @@ button:disabled {
   align-items: flex-end;
   gap: 2px;
   height: 360px;
-  padding: 12px;
+  padding: 36px 12px 12px; /* 위쪽은 가장 큰 막대의 숫자가 들어갈 자리 */
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -129,9 +169,46 @@ button:disabled {
 
 /* 막대 하나. 높이는 main.js가 값에 맞춰 정해 줍니다. */
 .bar {
+  position: relative; /* 숫자(.bar-label)를 막대 기준으로 놓기 위해 */
   flex: 1;
+  min-height: 2px;    /* 값이 0이어도 막대가 있다는 건 보이게 */
   background: var(--bar);
   border-radius: 3px 3px 0 0;
+}
+
+/* 막대 위 숫자: 막대 바로 위(bottom: 100%)에 가운데 정렬 */
+.bar-label {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* 막대가 좁으면 숫자를 세로로 세운다 */
+.bars.compact .bar-label {
+  font-size: 9px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: -1px;
+}
+
+/* 너무 좁으면 숨긴다 (마우스를 올리면 title로 값이 보인다) */
+.bars.tiny .bar-label {
+  display: none;
+}
+
+/* 비교·교환 중인 막대의 숫자는 진하게 */
+.bar.compare .bar-label,
+.bar.swap .bar-label {
+  color: var(--text);
+  font-weight: 700;
 }
 
 /* 상태별 막대 색. 확정(sorted)보다 비교·교환을 뒤에 둬서, 둘 다 붙으면 비교·교환 색이 보인다. */
@@ -179,5 +256,14 @@ button:disabled {
   .bars {
     height: 260px;
     gap: 1px;
+  }
+
+  /* 휴대폰: 라벨은 한 줄을 다 쓰고, 입력칸과 적용 버튼은 다음 줄에 나란히 */
+  .custom label {
+    width: 100%;
+  }
+
+  .custom input {
+    min-width: 0;
   }
 }
