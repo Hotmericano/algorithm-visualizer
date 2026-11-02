@@ -6,7 +6,7 @@
   <title>알고리즘 시각화</title>
   <!-- 파일 주소 끝의 ?v=버전 : 버전이 바뀌면 브라우저가 예전 캐시 대신 새 파일을 받는다.
        CSS나 JS를 고친 PR에서는 이 숫자를 함께 올려 주세요. -->
-  <link rel="stylesheet" href="style.css?v=0.4.1">
+  <link rel="stylesheet" href="style.css?v=0.4.2">
 </head>
 <body>
   <header>
@@ -105,6 +105,20 @@
     <!-- ===== 길찾기 화면 ===== -->
     <section id="path-view" class="view" hidden>
       <div class="controls">
+        <!-- 길찾기 알고리즘 고르기. 목록은 grid.js가 PATH_ALGORITHMS를 보고 채웁니다. -->
+        <select id="path-algorithm-select" aria-label="길찾기 알고리즘"></select>
+        <button id="path-play-btn" class="primary">시작</button>
+        <button id="path-step-btn" title="한 단계 앞으로">한 단계 ▶</button>
+
+        <label class="speed">
+          속도
+          <input id="path-speed-slider" type="range" min="1" max="100" value="80">
+        </label>
+
+        <span id="path-status" class="status" aria-live="polite"></span>
+      </div>
+
+      <div class="controls">
         <button id="clear-walls-btn">벽 지우기</button>
         <button id="random-walls-btn">랜덤 벽</button>
       </div>
@@ -114,6 +128,13 @@
         출발점(▶)과 도착점(★)은 끌어서 옮길 수 있어요.
       </p>
 
+      <!-- 방문한 칸 수와 찾은 경로 길이 -->
+      <div class="counters">
+        <span>방문한 칸 <b id="visited-count">0</b></span>
+        <span>경로 길이 <b id="path-length">-</b></span>
+        <span id="path-message" class="path-message"></span>
+      </div>
+
       <!-- 격자 칸들이 들어갈 자리. grid.js가 화면 폭에 맞춰 칸을 채웁니다. -->
       <div id="grid" class="grid" aria-label="길찾기 격자"></div>
 
@@ -121,16 +142,23 @@
         <li><span class="swatch cell-start"></span>출발</li>
         <li><span class="swatch cell-end"></span>도착</li>
         <li><span class="swatch cell-wall"></span>벽</li>
+        <li><span class="swatch cell-frontier"></span>대기열 (나중에 볼 칸)</li>
+        <li><span class="swatch cell-visited"></span>방문함</li>
+        <li><span class="swatch cell-current"></span>지금 보는 칸</li>
+        <li><span class="swatch cell-path"></span>최단 경로</li>
       </ul>
+
+      <p id="path-summary" class="info-note path-summary"></p>
     </section>
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
-  <script src="utils.js?v=0.4.1"></script>
-  <script src="algorithms.js?v=0.4.1"></script>
-  <script src="player.js?v=0.4.1"></script>
-  <script src="main.js?v=0.4.1"></script>
-  <script src="grid.js?v=0.4.1"></script>
-  <script src="app.js?v=0.4.1"></script>
+  <script src="utils.js?v=0.4.2"></script>
+  <script src="algorithms.js?v=0.4.2"></script>
+  <script src="player.js?v=0.4.2"></script>
+  <script src="main.js?v=0.4.2"></script>
+  <script src="pathfinding.js?v=0.4.2"></script>
+  <script src="grid.js?v=0.4.2"></script>
+  <script src="app.js?v=0.4.2"></script>
 </body>
 </html>
