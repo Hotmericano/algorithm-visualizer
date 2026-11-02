@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>알고리즘 시각화</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- 파일 주소 끝의 ?v=버전 : 버전이 바뀌면 브라우저가 예전 캐시 대신 새 파일을 받는다.
+       CSS나 JS를 고친 PR에서는 이 숫자를 함께 올려 주세요. -->
+  <link rel="stylesheet" href="style.css?v=0.2.1">
 </head>
 <body>
   <header>
@@ -49,8 +51,8 @@
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
-  <script src="utils.js"></script>
-  <script src="algorithms.js"></script>
-  <script src="main.js"></script>
+  <script src="utils.js?v=0.2.1"></script>
+  <script src="algorithms.js?v=0.2.1"></script>
+  <script src="main.js?v=0.2.1"></script>
 </body>
 </html>
