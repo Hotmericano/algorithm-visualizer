@@ -1,5 +1,6 @@
 // ===== 설정 =====
-const ARRAY_SIZE = 30;  // 막대 개수
+const ARRAY_SIZE = 30;         // 막대 개수
+const ARRAY_SIZE_MOBILE = 20;  // 좁은 화면(휴대폰)에서는 막대를 줄여서 숫자가 보이게
 const MIN_VALUE = 5;    // 가장 작은 값
 const MAX_VALUE = 100;  // 가장 큰 값
 
@@ -70,12 +71,13 @@ function renderBars(values) {
 }
 
 // 막대 폭에 맞춰 숫자 표시 방식을 고른다.
-//   넓으면 가로로, 좁으면 세로로, 너무 좁으면 숨긴다.
+//   넓으면 가로로, 조금 좁으면 작은 글씨로, 더 좁으면 세로로, 너무 좁으면 숨긴다.
 function updateLabelMode() {
   const count = barsContainer.children.length;
   if (count === 0) return;
   const barWidth = barsContainer.clientWidth / count;
-  barsContainer.classList.toggle('compact', barWidth < 24);
+  barsContainer.classList.toggle('small', barWidth < 24);
+  barsContainer.classList.toggle('compact', barWidth < 15);
   barsContainer.classList.toggle('tiny', barWidth < 9);
 }
 
@@ -206,9 +208,10 @@ function loadArray(values, keepResults = false) {
   sortPlayer.reset(); // 재생 중이었다면 멈추고 '시작' 상태로
 }
 
-// '새 배열': 랜덤 배열로 시작한다.
+// '새 배열': 랜덤 배열로 시작한다. 화면이 좁으면 막대 개수를 줄인다.
 function resetArray() {
-  loadArray(createRandomArray(ARRAY_SIZE));
+  const size = window.innerWidth < 500 ? ARRAY_SIZE_MOBILE : ARRAY_SIZE;
+  loadArray(createRandomArray(size));
   customError.textContent = '';
 }
 

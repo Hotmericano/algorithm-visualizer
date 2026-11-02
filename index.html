@@ -6,7 +6,7 @@
   <title>알고리즘 시각화</title>
   <!-- 파일 주소 끝의 ?v=버전 : 버전이 바뀌면 브라우저가 예전 캐시 대신 새 파일을 받는다.
        CSS나 JS를 고친 PR에서는 이 숫자를 함께 올려 주세요. -->
-  <link rel="stylesheet" href="style.css?v=0.5.2">
+  <link rel="stylesheet" href="style.css?v=1.0.1">
 </head>
 <body>
   <header>
@@ -131,12 +131,6 @@
         <button id="compare-paths-btn">모든 알고리즘 비교</button>
       </div>
 
-      <p class="hint">
-        누르고 끌면 고른 것(벽 / 진흙)이 칠해지고, 이미 칠해진 칸에서 시작하면 지워집니다.
-        출발점(▶)과 도착점(★)은 끌어서 옮길 수 있어요.
-        보통 칸은 들어가는 비용이 1, 진흙은 5예요.
-      </p>
-
       <!-- 방문한 칸 수와 찾은 경로 길이 -->
       <div class="counters">
         <span>방문한 칸 <b id="visited-count">0</b></span>
@@ -147,6 +141,12 @@
 
       <!-- 격자 칸들이 들어갈 자리. grid.js가 화면 폭에 맞춰 칸을 채웁니다. -->
       <div id="grid" class="grid" aria-label="길찾기 격자"></div>
+
+      <p class="hint grid-hint">
+        누르고 끌면 고른 것(벽 / 진흙)이 칠해지고, 이미 칠해진 칸에서 시작하면 지워집니다.
+        출발점(▶)과 도착점(★)은 끌어서 옮길 수 있어요.
+        보통 칸은 들어가는 비용이 1, 진흙은 5예요.
+      </p>
 
       <ul class="legend">
         <li><span class="swatch cell-start"></span>출발</li>
@@ -176,13 +176,13 @@
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
-  <script src="utils.js?v=0.5.2"></script>
-  <script src="algorithms.js?v=0.5.2"></script>
-  <script src="player.js?v=0.5.2"></script>
-  <script src="main.js?v=0.5.2"></script>
-  <script src="priorityQueue.js?v=0.5.2"></script>
-  <script src="pathfinding.js?v=0.5.2"></script>
-  <script src="grid.js?v=0.5.2"></script>
-  <script src="app.js?v=0.5.2"></script>
+  <script src="utils.js?v=1.0.1"></script>
+  <script src="algorithms.js?v=1.0.1"></script>
+  <script src="player.js?v=1.0.1"></script>
+  <script src="main.js?v=1.0.1"></script>
+  <script src="priorityQueue.js?v=1.0.1"></script>
+  <script src="pathfinding.js?v=1.0.1"></script>
+  <script src="grid.js?v=1.0.1"></script>
+  <script src="app.js?v=1.0.1"></script>
 </body>
 </html>

@@ -45,7 +45,8 @@ function onGridEdit() {
 function measureSize() {
   const width = gridEl.clientWidth;
   const cols = Math.max(MIN_COLS, Math.min(MAX_COLS, Math.floor(width / CELL_TARGET_SIZE)));
-  const rows = cols >= 25 ? 17 : 21; // 좁은 화면(휴대폰)은 세로로 조금 더 길게
+  // 좁은 화면(휴대폰)은 버튼과 격자가 한 화면에 들어오도록 행을 줄인다.
+  const rows = cols >= 25 ? 17 : 14;
   return { rows, cols };
 }
 

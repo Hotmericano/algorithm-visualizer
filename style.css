@@ -204,6 +204,12 @@ button:disabled {
   pointer-events: none;
 }
 
+/* 막대가 조금 좁으면 작은 글씨로 */
+.bars.small .bar-label {
+  font-size: 10px;
+  letter-spacing: -0.5px;
+}
+
 /* 막대가 좁으면 숫자를 세로로 세운다 */
 .bars.compact .bar-label {
   font-size: 9px;
@@ -514,8 +520,8 @@ tr.best td {
   content: '★';
 }
 
-#path-view .hint {
-  margin-bottom: 12px;
+.grid-hint {
+  margin: 10px 0 4px;
 }
 
 /* ===== 탐색 표시 ===== */
@@ -641,4 +647,63 @@ tr.best td {
   color: #fff;
   background: var(--text);
   border-color: var(--text);
+}
+
+/* ===== 휴대폰 ===== */
+
+/* 버튼을 두 번 빨리 눌러도 화면이 확대되지 않게 (누를 때 반응도 빨라진다) */
+button,
+select,
+input[type='range'] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; /* 누를 때 생기는 파란 상자 없애기 */
+}
+
+@media (max-width: 500px) {
+  body {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 1.35rem;
+  }
+
+  .subtitle {
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+
+  .tabs {
+    margin: 0 0 16px;
+  }
+
+  /* 버튼을 조금 작게 해서 한 줄에 더 들어가게 */
+  button,
+  select {
+    padding: 7px 11px;
+    font-size: 0.95rem;
+  }
+
+  .controls {
+    gap: 6px 8px;
+    margin-bottom: 10px;
+  }
+
+  #play-btn,
+  #path-play-btn {
+    min-width: 84px;
+  }
+
+  .speed input {
+    width: 110px;
+  }
+
+  .grid-hint {
+    font-size: 0.85rem;
+  }
+
+  .legend {
+    gap: 6px 12px;
+    font-size: 0.85rem;
+  }
 }
