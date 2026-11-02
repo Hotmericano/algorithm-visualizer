@@ -6,10 +6,15 @@ const CELL_TARGET_SIZE = 26; // 칸 하나의 목표 크기(px). 화면 폭을 �
 const MIN_COLS = 12;
 const MAX_COLS = 40;
 const RANDOM_WALL_RATE = 0.28; // '랜덤 벽'에서 벽이 될 확률
+const RANDOM_MUD_RATE = 0.2;   // '랜덤 진흙'에서 진흙이 될 확률
+const MUD_COST = 5;            // 진흙 칸에 들어가는 비용 (보통 칸은 1)
 
 const gridEl = document.getElementById('grid');
 const clearWallsBtn = document.getElementById('clear-walls-btn');
 const randomWallsBtn = document.getElementById('random-walls-btn');
+const randomMudBtn = document.getElementById('random-mud-btn');
+const brushBtns = document.querySelectorAll('.brush');
+const pathCostEl = document.getElementById('path-cost');
 const pathAlgorithmSelect = document.getElementById('path-algorithm-select');
 const visitedCountEl = document.getElementById('visited-count');
 const pathLengthEl = document.getElementById('path-length');
@@ -17,10 +22,11 @@ const pathMessage = document.getElementById('path-message');
 const pathSummary = document.getElementById('path-summary');
 
 // 격자 데이터
-//   rows, cols   행·열 개수
-//   walls[r][c]  벽이면 true
-//   start, end   { r, c } 출발점과 도착점
-const grid = { rows: 0, cols: 0, walls: [], start: null, end: null };
+//   rows, cols     행·열 개수
+//   walls[r][c]    벽이면 true
+//   weights[r][c]  그 칸에 들어가는 비용 (보통 1, 진흙 MUD_COST)
+//   start, end     { r, c } 출발점과 도착점
+const grid = { rows: 0, cols: 0, walls: [], weights: [], start: null, end: null };
 let cellEls = []; // cellEls[r][c] = 화면의 칸(div)
 
 // 격자를 고치면 이전 탐색 결과는 더 이상 맞지 않으니 지우고 처음 상태로 돌아간다.
@@ -47,11 +53,15 @@ function resizeGrid() {
   if (rows === grid.rows && cols === grid.cols) return; // 그대로면 할 일 없음
 
   const oldWalls = grid.walls;
+  const oldWeights = grid.weights;
   grid.walls = [];
+  grid.weights = [];
   for (let r = 0; r < rows; r++) {
     grid.walls.push([]);
+    grid.weights.push([]);
     for (let c = 0; c < cols; c++) {
       grid.walls[r].push(Boolean(oldWalls[r] && oldWalls[r][c]));
+      grid.weights[r].push((oldWeights[r] && oldWeights[r][c]) || 1);
     }
   }
   grid.rows = rows;
@@ -102,6 +112,7 @@ const isEnd = (r, c) => grid.end.r === r && grid.end.c === c;
 function renderCell(r, c) {
   const cell = cellEls[r][c];
   cell.classList.toggle('wall', grid.walls[r][c]);
+  cell.classList.toggle('mud', grid.weights[r][c] > 1);
   cell.classList.toggle('start', isStart(r, c));
   cell.classList.toggle('end', isEnd(r, c));
 }
@@ -115,11 +126,18 @@ function renderAllCells() {
 // ===== 마우스·터치로 편집하기 =====
 // pointer 이벤트는 마우스, 터치, 펜을 한 가지 코드로 다룰 수 있다.
 //
+// 무엇을 그릴지는 붓(brush)으로 고른다: 'wall' 벽 / 'mud' 진흙
 // 누른 칸에 따라 끄는 동안 할 일(mode)이 정해진다.
 //   'start' 출발점 옮기기 / 'end' 도착점 옮기기
-//   'draw'  빈 칸을 눌렀다 → 지나가는 칸을 벽으로
-//   'erase' 벽을 눌렀다   → 지나가는 칸의 벽을 지우기
+//   'paint' 붓과 다른 칸을 눌렀다 → 지나가는 칸을 붓으로 칠하기
+//   'erase' 붓과 같은 칸을 눌렀다 → 지나가는 칸에서 그것을 지우기
+let brush = 'wall';
 let dragMode = null;
+
+// (r, c) 칸이 지금 붓으로 칠해진 상태인가
+function hasBrush(r, c) {
+  return brush === 'wall' ? grid.walls[r][c] : grid.weights[r][c] > 1;
+}
 
 // 화면 좌표(x, y)에 있는 칸의 { r, c }. 격자 밖이면 null
 function cellAt(x, y) {
@@ -140,13 +158,22 @@ function applyDrag({ r, c }) {
     const old = { ...point };
     point.r = r;
     point.c = c;
+    grid.weights[r][c] = 1; // 출발점·도착점 칸에는 진흙을 두지 않는다
     renderCell(old.r, old.c);
     renderCell(r, c);
   } else {
-    if (isStart(r, c) || isEnd(r, c)) return; // 출발점·도착점에는 벽을 놓지 않는다
-    const wall = dragMode === 'draw';
-    if (grid.walls[r][c] === wall) return;
-    grid.walls[r][c] = wall;
+    if (isStart(r, c) || isEnd(r, c)) return; // 출발점·도착점에는 칠하지 않는다
+    const paint = dragMode === 'paint';
+    if (hasBrush(r, c) === paint) return; // 이미 원하는 상태면 할 일 없음
+
+    // 한 칸은 벽이거나 진흙이거나 빈 칸 중 하나다.
+    if (brush === 'wall') {
+      grid.walls[r][c] = paint;
+      if (paint) grid.weights[r][c] = 1;
+    } else {
+      grid.weights[r][c] = paint ? MUD_COST : 1;
+      if (paint) grid.walls[r][c] = false;
+    }
     renderCell(r, c);
   }
   onGridEdit();
@@ -161,7 +188,7 @@ gridEl.addEventListener('pointerdown', (event) => {
 
   if (isStart(pos.r, pos.c)) dragMode = 'start';
   else if (isEnd(pos.r, pos.c)) dragMode = 'end';
-  else dragMode = grid.walls[pos.r][pos.c] ? 'erase' : 'draw';
+  else dragMode = hasBrush(pos.r, pos.c) ? 'erase' : 'paint';
 
   applyDrag(pos);
 });
@@ -180,24 +207,51 @@ gridEl.addEventListener('pointercancel', endDrag);
 
 // ===== 버튼 =====
 
-function clearWalls() {
+// 벽과 진흙을 모두 지운다.
+function clearAll() {
   for (const row of grid.walls) row.fill(false);
+  for (const row of grid.weights) row.fill(1);
   renderAllCells();
   onGridEdit();
 }
 
+// 벽을 랜덤으로 다시 놓는다. (진흙은 벽이 된 칸에서만 지워진다)
 function randomWalls() {
   for (let r = 0; r < grid.rows; r++) {
     for (let c = 0; c < grid.cols; c++) {
-      grid.walls[r][c] = !isStart(r, c) && !isEnd(r, c) && Math.random() < RANDOM_WALL_RATE;
+      const wall = !isStart(r, c) && !isEnd(r, c) && Math.random() < RANDOM_WALL_RATE;
+      grid.walls[r][c] = wall;
+      if (wall) grid.weights[r][c] = 1;
     }
   }
   renderAllCells();
   onGridEdit();
 }
 
-clearWallsBtn.addEventListener('click', clearWalls);
+// 벽이 아닌 칸에 진흙을 랜덤으로 다시 놓는다.
+function randomMud() {
+  for (let r = 0; r < grid.rows; r++) {
+    for (let c = 0; c < grid.cols; c++) {
+      const mud =
+        !grid.walls[r][c] && !isStart(r, c) && !isEnd(r, c) && Math.random() < RANDOM_MUD_RATE;
+      grid.weights[r][c] = mud ? MUD_COST : 1;
+    }
+  }
+  renderAllCells();
+  onGridEdit();
+}
+
+clearWallsBtn.addEventListener('click', clearAll);
 randomWallsBtn.addEventListener('click', randomWalls);
+randomMudBtn.addEventListener('click', randomMud);
+
+// 붓 고르기: 누른 버튼만 눌린 상태(aria-pressed)로
+for (const btn of brushBtns) {
+  btn.addEventListener('click', () => {
+    brush = btn.dataset.brush;
+    for (const b of brushBtns) b.setAttribute('aria-pressed', String(b === btn));
+  });
+}
 
 // 길찾기 화면이 처음 보일 때, 그리고 창 크기가 바뀔 때 격자 크기를 맞춘다.
 document.addEventListener('viewchange', (event) => {
@@ -256,14 +310,13 @@ function finishSearch() {
   updateSearchCounts();
 }
 
-// 방문한 칸 수, 경로 길이를 화면에 맞춘다.
+// 방문한 칸 수, 경로 길이와 비용을 화면에 맞춘다.
 function updateSearchCounts() {
   visitedCountEl.textContent = shownVisited;
-  // 경로를 다 그렸을 때만 길이를 보여준다. (그리는 중에는 '-')
-  pathLengthEl.textContent =
-    searchResult && searchResult.found && pathPlayer.state === 'done'
-      ? `${searchResult.pathLength}칸`
-      : '-';
+  // 경로를 다 그렸을 때만 길이와 비용을 보여준다. (그리는 중에는 '-')
+  const show = searchResult && searchResult.found && pathPlayer.state === 'done';
+  pathLengthEl.textContent = show ? `${searchResult.pathLength}칸` : '-';
+  pathCostEl.textContent = show ? searchResult.pathCost : '-';
 }
 
 // 탐색 흔적을 모두 지우고 '시작' 상태로 돌아간다.

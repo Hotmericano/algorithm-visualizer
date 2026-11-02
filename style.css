@@ -568,3 +568,77 @@ tr.best td {
 .path-summary {
   margin-top: 16px;
 }
+
+/* ===== 진흙과 붓 ===== */
+:root {
+  --mud: #c9a27c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mud: #7a5b3e;
+  }
+}
+
+.cell.mud,
+.swatch.cell-mud {
+  background: var(--mud);
+}
+
+/* 진흙은 탐색 색이 칠해져도 알아볼 수 있게 물결 기호를 남긴다 */
+.cell.mud::after {
+  content: '≈';
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* 탐색 중인 진흙 칸: 탐색 색을 쓰되 테두리로 진흙 표시 */
+.cell.mud.frontier,
+.cell.mud.visited,
+.cell.mud.current,
+.cell.mud.path {
+  box-shadow: inset 0 0 0 2px var(--mud);
+}
+
+.cell.mud.frontier {
+  background: var(--frontier);
+}
+
+.cell.mud.visited {
+  background: var(--visited);
+}
+
+.cell.mud.current {
+  background: var(--bar);
+}
+
+.cell.mud.path {
+  background: var(--compare);
+}
+
+.brush-label {
+  color: var(--muted);
+}
+
+/* 붓 버튼 두 개를 하나로 붙인 모양 */
+.brush-group {
+  display: inline-flex;
+}
+
+.brush-group .brush {
+  border-radius: 0;
+}
+
+.brush-group .brush:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.brush-group .brush:last-child {
+  border-radius: 0 6px 6px 0;
+  margin-left: -1px;
+}
+
+.brush[aria-pressed='true'] {
+  color: #fff;
+  background: var(--text);
+  border-color: var(--text);
+}
