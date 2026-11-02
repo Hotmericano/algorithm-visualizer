@@ -517,3 +517,54 @@ tr.best td {
 #path-view .hint {
   margin-bottom: 12px;
 }
+
+/* ===== 탐색 표시 ===== */
+:root {
+  --frontier: #c9ead9; /* 대기열 */
+  --visited: #bcd2f6;  /* 방문함 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --frontier: #24503d;
+    --visited: #2c4570;
+  }
+}
+
+.cell.frontier,
+.swatch.cell-frontier {
+  background: var(--frontier);
+}
+
+.cell.visited,
+.swatch.cell-visited {
+  background: var(--visited);
+}
+
+.cell.current,
+.swatch.cell-current {
+  background: var(--bar);
+}
+
+.cell.path,
+.swatch.cell-path {
+  background: var(--compare);
+}
+
+/* 출발점·도착점은 탐색 색보다 항상 위에 보이게 (아래에 써서 우선) */
+.cell.start {
+  background: var(--sorted);
+}
+
+.cell.end {
+  background: var(--swap);
+}
+
+.path-message {
+  color: var(--swap);
+  font-weight: 600;
+}
+
+.path-summary {
+  margin-top: 16px;
+}

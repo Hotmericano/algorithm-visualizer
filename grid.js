@@ -10,6 +10,11 @@ const RANDOM_WALL_RATE = 0.28; // '랜덤 벽'에서 벽이 될 확률
 const gridEl = document.getElementById('grid');
 const clearWallsBtn = document.getElementById('clear-walls-btn');
 const randomWallsBtn = document.getElementById('random-walls-btn');
+const pathAlgorithmSelect = document.getElementById('path-algorithm-select');
+const visitedCountEl = document.getElementById('visited-count');
+const pathLengthEl = document.getElementById('path-length');
+const pathMessage = document.getElementById('path-message');
+const pathSummary = document.getElementById('path-summary');
 
 // 격자 데이터
 //   rows, cols   행·열 개수
@@ -18,8 +23,11 @@ const randomWallsBtn = document.getElementById('random-walls-btn');
 const grid = { rows: 0, cols: 0, walls: [], start: null, end: null };
 let cellEls = []; // cellEls[r][c] = 화면의 칸(div)
 
-// 격자를 편집했을 때 부를 함수. #11에서 "탐색 결과 지우기"를 연결한다.
-let onGridEdit = () => {};
+// 격자를 고치면 이전 탐색 결과는 더 이상 맞지 않으니 지우고 처음 상태로 돌아간다.
+// (pathPlayer는 아래 '탐색 재생'에서 만든다. 함수는 나중에 불리니까 괜찮다)
+function onGridEdit() {
+  resetSearch();
+}
 
 // ===== 크기 정하기 =====
 
@@ -57,6 +65,7 @@ function resizeGrid() {
   grid.walls[grid.end.r][grid.end.c] = false;
 
   buildCells();
+  resetSearch();
 }
 
 // 격자 데이터에 맞춰 칸(div)을 만든다.
@@ -195,3 +204,95 @@ document.addEventListener('viewchange', (event) => {
   if (event.detail === 'path') resizeGrid();
 });
 window.addEventListener('resize', resizeGrid);
+
+// ===== 탐색 재생 =====
+// 정렬 화면과 같은 재생기(player.js)를 쓴다. 길찾기는 단계를 만드는 법과 그리는 법만 알려 준다.
+
+let searchResult = null; // 마지막 탐색 결과 { steps, found, visitedCount, pathLength }
+let shownVisited = 0;    // 지금까지 화면에 그린 방문 칸 수
+let shownPath = 0;       // 지금까지 화면에 그린 경로 칸 수
+let currentCell = null;  // '지금 보는 칸' 표시가 붙어 있는 칸
+
+const pathPlayer = createPlayer({
+  playBtn: document.getElementById('path-play-btn'),
+  stepBtn: document.getElementById('path-step-btn'),
+  speedSlider: document.getElementById('path-speed-slider'),
+  statusText: document.getElementById('path-status'),
+  buildSteps: () => {
+    searchResult = PATH_ALGORITHMS[pathAlgorithmSelect.value].search(grid);
+    return searchResult.steps;
+  },
+  applyStep: applySearchStep,
+  onFinish: finishSearch,
+  onReplay: resetSearch,
+  onStatus: updateSearchCounts,
+});
+
+// 탐색 단계 하나를 칸에 그린다.
+function applySearchStep(step) {
+  const cell = cellEls[step.r][step.c];
+
+  if (step.type === 'frontier') {
+    cell.classList.add('frontier');
+  } else if (step.type === 'visit') {
+    // '지금 보는 칸' 표시를 이 칸으로 옮긴다.
+    if (currentCell) currentCell.classList.remove('current');
+    currentCell = cell;
+    cell.classList.remove('frontier');
+    cell.classList.add('visited', 'current');
+    shownVisited++;
+  } else if (step.type === 'path') {
+    if (currentCell) currentCell.classList.remove('current');
+    currentCell = null;
+    cell.classList.add('path');
+    shownPath++;
+  }
+}
+
+function finishSearch() {
+  if (currentCell) currentCell.classList.remove('current');
+  currentCell = null;
+  pathMessage.textContent = searchResult.found ? '' : '도착점까지 가는 길이 없어요.';
+  updateSearchCounts();
+}
+
+// 방문한 칸 수, 경로 길이를 화면에 맞춘다.
+function updateSearchCounts() {
+  visitedCountEl.textContent = shownVisited;
+  // 경로를 다 그렸을 때만 길이를 보여준다. (그리는 중에는 '-')
+  pathLengthEl.textContent =
+    searchResult && searchResult.found && pathPlayer.state === 'done'
+      ? `${searchResult.pathLength}칸`
+      : '-';
+}
+
+// 탐색 흔적을 모두 지우고 '시작' 상태로 돌아간다.
+function resetSearch() {
+  for (const row of cellEls) {
+    for (const cell of row) cell.classList.remove('frontier', 'visited', 'current', 'path');
+  }
+  searchResult = null;
+  shownVisited = 0;
+  shownPath = 0;
+  currentCell = null;
+  pathMessage.textContent = '';
+  pathPlayer.reset();
+}
+
+// 드롭다운에 알고리즘 목록을 채우고, 고른 알고리즘의 설명을 보여준다.
+for (const [key, algorithm] of Object.entries(PATH_ALGORITHMS)) {
+  const option = document.createElement('option');
+  option.value = key;
+  option.textContent = algorithm.name;
+  pathAlgorithmSelect.appendChild(option);
+}
+
+function renderPathSummary() {
+  pathSummary.textContent = PATH_ALGORITHMS[pathAlgorithmSelect.value].summary;
+}
+
+pathAlgorithmSelect.addEventListener('change', () => {
+  resetSearch();
+  renderPathSummary();
+});
+renderPathSummary();
