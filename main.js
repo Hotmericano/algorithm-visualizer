@@ -320,11 +320,36 @@ for (const [key, algorithm] of Object.entries(SORT_ALGORITHMS)) {
   algorithmSelect.appendChild(option);
 }
 
+// 선택한 알고리즘의 설명 패널을 채운다.
+function renderInfo() {
+  const a = SORT_ALGORITHMS[algorithmSelect.value];
+  const byId = (id) => document.getElementById(id);
+
+  byId('info-title').textContent = a.name;
+
+  const list = byId('info-summary');
+  list.innerHTML = '';
+  for (const line of a.summary) {
+    const li = document.createElement('li');
+    li.textContent = line;
+    list.appendChild(li);
+  }
+
+  byId('info-best').textContent = a.best;
+  byId('info-average').textContent = a.average;
+  byId('info-worst').textContent = a.worst;
+  byId('info-space').textContent = a.space;
+  byId('info-stable').textContent = a.stable ? '예' : '아니요';
+  byId('info-note').textContent = a.note || ''; // 메모가 없으면 비워서 숨긴다
+}
+
 // 알고리즘을 바꾸면 같은 처음 배열로 되돌린다.
 // 그래서 배열은 그대로 두고 알고리즘만 바꿔 가며 비교할 수 있다.
 algorithmSelect.addEventListener('change', () => {
   loadArray(initialArray, true);
+  renderInfo();
 });
+renderInfo();
 
 // 창 크기가 바뀌면 막대 폭도 바뀌니까 숫자 표시 방식을 다시 고른다.
 window.addEventListener('resize', updateLabelMode);

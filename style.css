@@ -365,3 +365,75 @@ tr.best td {
   color: var(--sorted);
   font-weight: 700;
 }
+
+/* 알고리즘 설명 패널 */
+.info {
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.info h2 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.info-summary {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+/* 복잡도 표는 패널 안에 들어가니까 테두리 없이 */
+.complexity {
+  border: none;
+  border-radius: 0;
+  margin-bottom: 12px;
+}
+
+.complexity th,
+.complexity td,
+.complexity th:first-child,
+.complexity td:first-child {
+  text-align: center;
+}
+
+.complexity td {
+  font-weight: 600;
+}
+
+.info-note {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--compare);
+  background: var(--bg);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.info-note:empty {
+  display: none;
+}
+
+.info .hint {
+  margin: 0;
+}
+
+/* 복잡도 표기는 "O(n log n)"처럼 중간에 띄어쓰기가 있어도 한 줄로 */
+.complexity td {
+  white-space: nowrap;
+}
+
+@media (max-width: 500px) {
+  .info {
+    padding: 14px 12px;
+  }
+
+  .complexity th,
+  .complexity td {
+    padding: 6px 2px;
+    font-size: 0.78rem;
+  }
+}
