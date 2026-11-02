@@ -6,15 +6,23 @@
   <title>알고리즘 시각화</title>
   <!-- 파일 주소 끝의 ?v=버전 : 버전이 바뀌면 브라우저가 예전 캐시 대신 새 파일을 받는다.
        CSS나 JS를 고친 PR에서는 이 숫자를 함께 올려 주세요. -->
-  <link rel="stylesheet" href="style.css?v=0.3.2">
+  <link rel="stylesheet" href="style.css?v=0.4.0">
 </head>
 <body>
   <header>
     <h1>알고리즘 시각화</h1>
     <p class="subtitle">알고리즘을 한 단계씩 멈췄다 진행하며 살펴봅니다</p>
+
+    <!-- 정렬 / 길찾기 탭. app.js가 눌린 탭에 맞는 화면만 보여줍니다. -->
+    <nav class="tabs" role="tablist" aria-label="화면 선택">
+      <button class="tab" role="tab" data-view="sort" aria-selected="true">정렬</button>
+      <button class="tab" role="tab" data-view="path" aria-selected="false">길찾기</button>
+    </nav>
   </header>
 
   <main>
+    <!-- ===== 정렬 화면 ===== -->
+    <section id="sort-view" class="view">
     <div class="controls">
       <!-- 정렬 알고리즘 고르기. 목록은 main.js가 SORT_ALGORITHMS를 보고 채웁니다. -->
       <select id="algorithm-select" aria-label="정렬 알고리즘"></select>
@@ -92,11 +100,36 @@
         <tbody id="results-body"></tbody>
       </table>
     </section>
+    </section>
+
+    <!-- ===== 길찾기 화면 ===== -->
+    <section id="path-view" class="view" hidden>
+      <div class="controls">
+        <button id="clear-walls-btn">벽 지우기</button>
+        <button id="random-walls-btn">랜덤 벽</button>
+      </div>
+
+      <p class="hint">
+        빈 칸을 누르고 끌면 벽이 생기고, 벽을 누르고 끌면 지워집니다.
+        출발점(▶)과 도착점(★)은 끌어서 옮길 수 있어요.
+      </p>
+
+      <!-- 격자 칸들이 들어갈 자리. grid.js가 화면 폭에 맞춰 칸을 채웁니다. -->
+      <div id="grid" class="grid" aria-label="길찾기 격자"></div>
+
+      <ul class="legend">
+        <li><span class="swatch cell-start"></span>출발</li>
+        <li><span class="swatch cell-end"></span>도착</li>
+        <li><span class="swatch cell-wall"></span>벽</li>
+      </ul>
+    </section>
   </main>
 
   <!-- algorithms.js를 먼저 불러와야 main.js에서 정렬 함수를 쓸 수 있습니다. -->
-  <script src="utils.js?v=0.3.2"></script>
-  <script src="algorithms.js?v=0.3.2"></script>
-  <script src="main.js?v=0.3.2"></script>
+  <script src="utils.js?v=0.4.0"></script>
+  <script src="algorithms.js?v=0.4.0"></script>
+  <script src="main.js?v=0.4.0"></script>
+  <script src="grid.js?v=0.4.0"></script>
+  <script src="app.js?v=0.4.0"></script>
 </body>
 </html>
