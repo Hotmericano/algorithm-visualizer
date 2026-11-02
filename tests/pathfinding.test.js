@@ -2,16 +2,18 @@
 // 실행: node tests/pathfinding.test.js
 //
 // 격자를 글자로 그려서 만든다.
-//   S 출발점, E 도착점, # 벽, . 빈 칸
+//   S 출발점, E 도착점, # 벽, . 빈 칸, ~ 진흙(비용 5)
 
 const { PATH_ALGORITHMS } = require('../pathfinding.js');
 
 function parseGrid(lines) {
-  const grid = { rows: lines.length, cols: lines[0].length, walls: [], start: null, end: null };
+  const grid = { rows: lines.length, cols: lines[0].length, walls: [], weights: [], start: null, end: null };
   lines.forEach((line, r) => {
     grid.walls.push([]);
+    grid.weights.push([]);
     [...line].forEach((ch, c) => {
       grid.walls[r].push(ch === '#');
+      grid.weights[r].push(ch === '~' ? 5 : 1);
       if (ch === 'S') grid.start = { r, c };
       if (ch === 'E') grid.end = { r, c };
     });
@@ -38,20 +40,26 @@ function checkPath(grid, steps) {
   return null;
 }
 
-function check(algoKey, name, lines, expectedLength) {
+// expected: { moves, cost } 또는 null(길 없음)
+//   moves: 움직인 횟수의 최솟값 → 비용을 따지지 않는 알고리즘(BFS)은 이걸 맞춰야 한다
+//   cost:  비용 합의 최솟값     → 비용을 따지는 알고리즘(다익스트라, A*)은 이걸 맞춰야 한다
+function check(algoKey, name, lines, expected) {
   const grid = parseGrid(lines);
-  const { name: algoName, search } = PATH_ALGORITHMS[algoKey];
+  const { name: algoName, search, weighted } = PATH_ALGORITHMS[algoKey];
   const result = search(grid);
 
   let problem = null;
-  if (expectedLength === null) {
+  if (expected === null) {
     if (result.found) problem = '길이 없어야 하는데 찾음';
     else if (result.steps.some((s) => s.type === 'path')) problem = '길이 없는데 path 단계가 있음';
+  } else if (!result.found) {
+    problem = '길을 못 찾음';
+  } else if (weighted && result.pathCost !== expected.cost) {
+    problem = `경로 비용 ${result.pathCost} (기대값 ${expected.cost})`;
+  } else if (!weighted && result.pathLength !== expected.moves) {
+    problem = `경로 길이 ${result.pathLength} (기대값 ${expected.moves})`;
   } else {
-    if (!result.found) problem = '길을 못 찾음';
-    else if (result.pathLength !== expectedLength)
-      problem = `경로 길이 ${result.pathLength} (기대값 ${expectedLength})`;
-    else problem = checkPath(grid, result.steps);
+    problem = checkPath(grid, result.steps);
   }
 
   // 같은 칸을 두 번 방문하면 안 된다.
@@ -65,15 +73,19 @@ function check(algoKey, name, lines, expectedLength) {
 
   console.log(
     `${problem ? '❌' : '✅'} ${algoName} · ${name} ` +
-      `(방문 ${result.visitedCount}, 경로 ${result.pathLength})${problem ? ' - ' + problem : ''}`
+      `(방문 ${result.visitedCount}, 경로 ${result.pathLength}칸 · 비용 ${result.pathCost})` +
+      `${problem ? ' - ' + problem : ''}`
   );
   if (problem) process.exitCode = 1;
 }
 
-// [이름, 격자, 최단 경로 길이(길이 없으면 null)]
+// 진흙이 없는 격자는 움직인 횟수 = 비용이다.
+const plain = (n) => ({ moves: n, cost: n });
+
+// [이름, 격자, 기대값({ moves, cost }, 길이 없으면 null)]
 const cases = [
-  ['일직선', ['S...E'], 4],
-  ['바로 옆', ['SE'], 1],
+  ['일직선', ['S...E'], plain(4)],
+  ['바로 옆', ['SE'], plain(1)],
   [
     '벽 돌아가기',
     [
@@ -81,7 +93,7 @@ const cases = [
       'S.#.E',
       '..#..',
     ],
-    6,
+    plain(6),
   ],
   [
     '미로',
@@ -91,7 +103,28 @@ const cases = [
       '...#..E',
       '.#...#.',
     ],
-    10, // 아래 2 → 오른쪽 2 → 아래 1 → 오른쪽 2 → 위 1 → 오른쪽 2
+    plain(10), // 아래 2 → 오른쪽 2 → 아래 1 → 오른쪽 2 → 위 1 → 오른쪽 2
+  ],
+  [
+    // 진흙을 곧장 지나가면 4번 움직이지만 비용 16(5+5+5+1),
+    // 아래로 돌아가면 6번 움직이지만 비용 6
+    '진흙 돌아가기',
+    [
+      'S~~~E',
+      '.....',
+    ],
+    { moves: 4, cost: 6 },
+  ],
+  [
+    // 돌아가는 길이 너무 길면 진흙을 지나가는 게 더 싸다.
+    // 진흙 지나가기: 비용 9 / 위로 돌아가기: 위 2 + 오른쪽 6 + 아래 2 + 왼쪽 1 = 비용 11
+    '진흙이 더 쌀 때',
+    [
+      '.......',
+      '.#####.',
+      'S.~..E.',
+    ],
+    { moves: 5, cost: 9 }, // S→.→~→.→.→E : 1+5+1+1+1 = 9
   ],
   [
     '막힘',
