@@ -177,19 +177,15 @@ function recordResult() {
 // 비교표를 다시 그린다. 비교 횟수가 가장 적은 줄을 강조한다.
 function renderResults() {
   resultsSection.hidden = results.length === 0;
-  resultsBody.innerHTML = '';
   const fewest = Math.min(...results.map((r) => r.compare));
 
-  for (const r of results) {
-    const tr = document.createElement('tr');
-    if (results.length > 1 && r.compare === fewest) tr.className = 'best';
-    for (const text of [r.name, r.compare, r.swap, r.total]) {
-      const td = document.createElement('td');
-      td.textContent = text;
-      tr.appendChild(td);
-    }
-    resultsBody.appendChild(tr);
-  }
+  renderTableRows(
+    resultsBody,
+    results.map((r) => ({
+      cells: [r.name, r.compare, r.swap, r.total],
+      best: results.length > 1 && r.compare === fewest,
+    })),
+  );
 }
 
 // 주어진 배열로 처음 상태를 만든다. 재생 중이었다면 멈춘다.
@@ -242,12 +238,7 @@ customForm.addEventListener('submit', applyCustomArray);
 
 // 드롭다운에 알고리즘 목록을 채운다.
 // SORT_ALGORITHMS에 알고리즘을 추가하면 여기는 고치지 않아도 목록에 저절로 나온다.
-for (const [key, algorithm] of Object.entries(SORT_ALGORITHMS)) {
-  const option = document.createElement('option');
-  option.value = key;
-  option.textContent = algorithm.name;
-  algorithmSelect.appendChild(option);
-}
+fillAlgorithmSelect(algorithmSelect, SORT_ALGORITHMS);
 
 // 선택한 알고리즘의 설명 패널을 채운다.
 function renderInfo() {
