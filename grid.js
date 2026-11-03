@@ -269,7 +269,6 @@ window.addEventListener('resize', resizeGrid);
 
 let searchResult = null; // 마지막 탐색 결과 { steps, found, visitedCount, pathLength }
 let shownVisited = 0;    // 지금까지 화면에 그린 방문 칸 수
-let shownPath = 0;       // 지금까지 화면에 그린 경로 칸 수
 let currentCell = null;  // '지금 보는 칸' 표시가 붙어 있는 칸
 
 const pathPlayer = createPlayer({
@@ -304,7 +303,6 @@ function applySearchStep(step) {
     if (currentCell) currentCell.classList.remove('current');
     currentCell = null;
     cell.classList.add('path');
-    shownPath++;
   }
 }
 
@@ -331,19 +329,13 @@ function resetSearch() {
   }
   searchResult = null;
   shownVisited = 0;
-  shownPath = 0;
   currentCell = null;
   pathMessage.textContent = '';
   pathPlayer.reset();
 }
 
 // 드롭다운에 알고리즘 목록을 채우고, 고른 알고리즘의 설명을 보여준다.
-for (const [key, algorithm] of Object.entries(PATH_ALGORITHMS)) {
-  const option = document.createElement('option');
-  option.value = key;
-  option.textContent = algorithm.name;
-  pathAlgorithmSelect.appendChild(option);
-}
+fillAlgorithmSelect(pathAlgorithmSelect, PATH_ALGORITHMS);
 
 function renderPathSummary() {
   pathSummary.textContent = PATH_ALGORITHMS[pathAlgorithmSelect.value].summary;
@@ -366,20 +358,15 @@ function comparePaths() {
   const optimal = found.filter((r) => r.pathCost === cheapest);
   const fewest = Math.min(...optimal.map((r) => r.visitedCount));
 
-  pathResultsBody.innerHTML = '';
-  for (const r of rows) {
-    const tr = document.createElement('tr');
-    if (r.found && r.pathCost === cheapest && r.visitedCount === fewest) tr.className = 'best';
-    const cells = r.found
-      ? [r.name, r.visitedCount, `${r.pathLength}칸`, r.pathCost]
-      : [r.name, r.visitedCount, '길 없음', '-'];
-    for (const text of cells) {
-      const td = document.createElement('td');
-      td.textContent = text;
-      tr.appendChild(td);
-    }
-    pathResultsBody.appendChild(tr);
-  }
+  renderTableRows(
+    pathResultsBody,
+    rows.map((r) => ({
+      cells: r.found
+        ? [r.name, r.visitedCount, `${r.pathLength}칸`, r.pathCost]
+        : [r.name, r.visitedCount, '길 없음', '-'],
+      best: r.found && r.pathCost === cheapest && r.visitedCount === fewest,
+    })),
+  );
   pathResults.hidden = false;
   pathResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
